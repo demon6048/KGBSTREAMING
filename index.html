@@ -3,73 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KGB STREAMING v6.2 | Híbrido</title>
+    <title>KGB STREAMING | Sistema Oficial</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS (Excel) -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Montserrat', sans-serif; background-color: #f1f5f9; }
-        .nav-item.active { background-color: #4338ca; color: white; border-left: 4px solid #a5b4fc; }
+        .nav-item.active { background-color: #4338ca; color: white; border-left: 4px solid #a5b4fc; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); }
         .refunded-row { background-color: #fee2e2 !important; color: #991b1b !important; text-decoration: line-through; opacity: 0.7; }
+        
+        /* Transiciones */
         #sidebar { transition: transform 0.3s ease-in-out; }
         #mobile-overlay { transition: opacity 0.3s ease-in-out; }
+        #loader { backdrop-filter: blur(5px); z-index: 100; }
+
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     </style>
 </head>
-<body class="flex flex-col h-screen text-slate-800 bg-slate-50">
+<body class="flex flex-col h-screen overflow-hidden text-slate-800 bg-slate-50">
+
+    <!-- PANTALLA DE CARGA -->
+    <div id="loader" class="fixed inset-0 bg-slate-900/90 flex flex-col items-center justify-center text-white transition-opacity duration-500">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-500 mb-4"></div>
+        <h2 class="text-xl font-bold tracking-widest">CONECTANDO A KGB CLOUD...</h2>
+    </div>
 
     <!-- OVERLAY MÓVIL -->
     <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden backdrop-blur-sm"></div>
 
     <!-- SIDEBAR -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col z-50 shadow-2xl border-r border-slate-800 transform -translate-x-full md:translate-x-0 h-full">
+        <!-- Header Móvil del Menú -->
         <div class="flex justify-between items-center p-4 md:hidden border-b border-slate-800 bg-slate-950">
             <span class="font-bold text-white text-xs uppercase tracking-widest">Menú</span>
-            <button onclick="toggleMobileMenu()" class="text-white hover:text-red-400"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <button onclick="toggleMobileMenu()" class="text-white hover:text-red-400 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
         </div>
-        <div class="h-28 flex items-center justify-center border-b border-slate-800 p-4 bg-slate-950 hidden md:flex">
-            <!-- LOGO -->
-            <img src="https://via.placeholder.com/200x80/0f172a/ffffff?text=KGB+APP" alt="Logo" class="max-h-20 object-contain opacity-80">
+
+        <!-- Logo -->
+        <div class="h-28 flex items-center justify-center border-b border-slate-800 p-4 bg-slate-950 hidden md:flex relative group">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg mx-auto mb-2"><i class="fa-solid fa-play"></i></div>
+                <h1 class="text-sm font-black text-white tracking-widest">KGB SYSTEM</h1>
+            </div>
         </div>
+
+        <!-- Navegación -->
         <div class="flex-1 overflow-y-auto px-4 py-6 space-y-3">
             <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">Operaciones</div>
-            <button onclick="switchAppTab('pos')" id="nav-pos" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition active bg-indigo-700 text-white font-bold shadow-lg"><i class="fa-solid fa-cart-shopping w-5 mr-3"></i> <span>Venta Nueva</span></button>
-            <button onclick="switchAppTab('history')" id="nav-history" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition"><i class="fa-solid fa-list-check w-5 mr-3"></i> <span>Historial</span></button>
-            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2 mt-6">Gestión</div>
-            <button onclick="switchAppTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition"><i class="fa-solid fa-chart-pie w-5 mr-3"></i> <span>Reportes</span></button>
-            <button onclick="switchAppTab('config')" id="nav-config" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition"><i class="fa-solid fa-sliders w-5 mr-3"></i> <span>Configuración</span></button>
+            <button onclick="switchAppTab('pos')" id="nav-pos" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition active bg-indigo-700 text-white font-bold shadow-lg">
+                <i class="fa-solid fa-cart-shopping w-5 mr-3"></i> <span>Venta Nueva</span>
+            </button>
+            <button onclick="switchAppTab('history')" id="nav-history" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
+                <i class="fa-solid fa-list-check w-5 mr-3"></i> <span>Historial</span>
+            </button>
+            
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2 mt-6">Administración</div>
+            <button onclick="switchAppTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
+                <i class="fa-solid fa-chart-pie w-5 mr-3"></i> <span>Reportes</span>
+            </button>
+            <button onclick="switchAppTab('config')" id="nav-config" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
+                <i class="fa-solid fa-sliders w-5 mr-3"></i> <span>Configuración</span>
+            </button>
         </div>
+
         <div class="p-5 bg-black/20 border-t border-slate-800 text-center text-xs">
-            <p class="font-bold text-slate-500">Sistema Híbrido v6.2</p>
+            <div class="flex items-center justify-center gap-2 mb-1">
+                <div id="status-dot" class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span class="font-bold text-slate-300">Conectado</span>
+            </div>
+            <p class="text-indigo-500 font-bold">José Vizcarra</p>
         </div>
     </aside>
 
     <!-- HEADER TOP -->
-    <header class="bg-white h-16 border-b border-gray-200 flex items-center justify-between px-4 md:ml-64 z-30 fixed top-0 right-0 left-0">
+    <header class="bg-white h-16 border-b border-gray-200 flex items-center justify-between px-4 md:ml-64 z-30 fixed top-0 right-0 left-0 transition-all">
         <div class="flex items-center gap-4">
-            <button onclick="toggleMobileMenu()" class="md:hidden text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition"><i class="fa-solid fa-bars text-xl"></i></button>
+            <button onclick="toggleMobileMenu()" class="md:hidden text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition focus:outline-none">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
             <div>
                 <h1 class="text-lg md:text-xl font-black text-slate-900 tracking-tight leading-none">KGB <span class="text-indigo-600">STREAMING</span></h1>
+                <p class="text-[9px] text-slate-400 font-bold hidden sm:block">Panel de Control v7.0</p>
             </div>
         </div>
-        <!-- INDICADOR DE ESTADO -->
-        <div id="status-indicator" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 border border-gray-200">
-            <div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-            <span id="status-text" class="text-[10px] font-bold text-gray-500 uppercase">Modo Local</span>
+        <div class="text-xs font-bold text-white bg-indigo-600 px-3 py-1 rounded-full shadow-md flex items-center gap-2">
+            <i class="fa-solid fa-cloud"></i> EN NUBE
         </div>
     </header>
 
     <!-- MAIN CONTENT -->
     <main class="flex-1 bg-slate-50 overflow-y-auto p-4 md:p-8 pt-20 md:ml-64 h-full">
-        
-        <div id="view-app" class="max-w-6xl mx-auto pb-20">
+        <div class="max-w-6xl mx-auto pb-20">
             
-            <!-- POS -->
+            <!-- 1. POS -->
             <div id="tab-pos" class="app-tab w-full max-w-3xl mx-auto">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-5 border-b border-gray-100 flex justify-between items-center">
@@ -77,33 +113,33 @@
                     </div>
                     <div class="p-6 md:p-8 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Vendedor</label><select id="pos-seller" class="w-full border p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 bg-white"></select></div>
-                            <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Plataforma</label><select id="pos-product" onchange="updatePosCalc()" class="w-full border p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 bg-white"></select></div>
+                            <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Vendedor</label><select id="pos-seller" class="w-full border p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition"></select></div>
+                            <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Plataforma</label><select id="pos-product" onchange="updatePosCalc()" class="w-full border p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition"></select></div>
                         </div>
                         <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-lg relative overflow-hidden">
                             <div class="grid grid-cols-3 gap-2 text-center relative z-10">
                                 <div><p class="text-[9px] text-slate-400 font-bold uppercase mb-1">COSTO</p><input id="pos-cost" readonly class="w-full bg-transparent text-center font-mono text-lg font-bold text-slate-400 outline-none" value="0.00"></div>
-                                <div class="border-x border-slate-700"><p class="text-[9px] text-indigo-400 font-bold uppercase mb-1">VENTA</p><input id="pos-price" type="number" oninput="reCalcProfitOnly()" class="w-full bg-transparent text-center font-mono text-2xl font-bold text-white outline-none" value="0.00"></div>
+                                <div class="border-x border-slate-700"><p class="text-[9px] text-indigo-400 font-bold uppercase mb-1">VENTA</p><input id="pos-price" type="number" oninput="reCalcProfitOnly()" class="w-full bg-transparent text-center font-mono text-2xl font-bold text-white outline-none focus:text-indigo-400 transition" value="0.00"></div>
                                 <div><p class="text-[9px] text-emerald-400 font-bold uppercase mb-1">GANANCIA</p><p id="pos-profit" class="font-mono text-xl font-bold text-emerald-400 mt-1">0.00</p></div>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" id="pos-client" placeholder="Nombre Cliente" class="border p-3 rounded-xl text-sm w-full outline-none">
-                            <input type="tel" id="pos-phone" placeholder="Teléfono Cliente" class="border p-3 rounded-xl text-sm w-full outline-none">
+                            <input type="text" id="pos-client" placeholder="Nombre Cliente" class="border p-3 rounded-xl text-sm w-full outline-none focus:border-indigo-500 transition">
+                            <input type="tel" id="pos-phone" placeholder="Teléfono Cliente" class="border p-3 rounded-xl text-sm w-full outline-none focus:border-indigo-500 transition">
                         </div>
                         <button id="btn-submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition text-sm uppercase tracking-widest active:scale-[0.98]">Confirmar Venta</button>
                     </div>
                 </div>
             </div>
 
-            <!-- HISTORY -->
+            <!-- 2. HISTORY -->
             <div id="tab-history" class="app-tab hidden w-full">
-                <h2 class="text-xl font-black text-slate-800 mb-4 flex gap-2 items-center"><i class="fa-solid fa-list-check text-indigo-500"></i> Historial</h2>
+                <h2 class="text-xl font-black text-slate-800 mb-4 flex gap-2 items-center"><i class="fa-solid fa-list-check text-indigo-500"></i> Historial (Nube)</h2>
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
-                        <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Desde</label><input type="date" id="filter-start" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs focus:border-indigo-500 outline-none"></div>
-                        <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Hasta</label><input type="date" id="filter-end" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs focus:border-indigo-500 outline-none"></div>
-                        <div class="col-span-2 md:col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Vendedor</label><select id="filter-seller" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs focus:border-indigo-500 outline-none"></select></div>
+                        <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Desde</label><input type="date" id="filter-start" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></div>
+                        <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Hasta</label><input type="date" id="filter-end" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></div>
+                        <div class="col-span-2 md:col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Vendedor</label><select id="filter-seller" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></select></div>
                         <button onclick="exportToExcel()" class="col-span-2 md:col-span-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold shadow flex justify-center items-center gap-2 text-xs h-[34px] transition"><i class="fa-solid fa-file-excel"></i> Exportar</button>
                     </div>
                 </div>
@@ -134,22 +170,39 @@
                 <div class="flex flex-col gap-6">
                     <!-- Plataformas -->
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                        <h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2 flex justify-between"><span>1. Plataformas</span> <span id="prod-mode-badge" class="text-[9px] bg-slate-100 px-2 py-0.5 rounded text-slate-400">CREAR</span></h3>
+                        <h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2 flex justify-between">
+                            <span>1. Plataformas</span> <span id="prod-mode-badge" class="text-[9px] bg-slate-100 px-2 py-0.5 rounded text-slate-400 font-bold">CREAR</span>
+                        </h3>
                         <div class="bg-indigo-50 p-4 rounded-xl mb-4 border border-indigo-100 flex flex-col md:flex-row gap-2">
-                            <input type="hidden" id="edit-prod-id"><input type="text" id="new-prod-name" placeholder="Nombre" class="flex-grow border rounded-lg px-3 py-2 text-sm"><div class="flex gap-2"><input type="number" id="new-prod-cost" placeholder="Costo" class="w-20 border rounded-lg px-2 py-2 text-sm text-center"><input type="number" id="new-prod-price" placeholder="Venta" class="w-20 border rounded-lg px-2 py-2 text-sm text-center"><button id="btn-prod-action" class="bg-indigo-600 text-white px-4 rounded-lg font-bold text-sm shadow-md">Agregar</button><button id="btn-prod-cancel" onclick="cancelEdit('prod')" class="bg-slate-300 text-slate-600 px-3 rounded-lg font-bold text-sm hidden"><i class="fa-solid fa-xmark"></i></button></div>
+                            <input type="hidden" id="edit-prod-id">
+                            <input type="text" id="new-prod-name" placeholder="Nombre (Ej. Netflix)" class="flex-grow border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                            <div class="flex gap-2">
+                                <input type="number" id="new-prod-cost" placeholder="Costo" class="w-20 border rounded-lg px-2 py-2 text-sm text-center outline-none focus:ring-2 focus:ring-indigo-500">
+                                <input type="number" id="new-prod-price" placeholder="Venta" class="w-20 border rounded-lg px-2 py-2 text-sm text-center outline-none focus:ring-2 focus:ring-indigo-500">
+                                <button id="btn-prod-action" class="bg-indigo-600 text-white px-4 rounded-lg font-bold text-sm shadow-md transition">Agregar</button>
+                                <button id="btn-prod-cancel" onclick="cancelEdit('prod')" class="bg-slate-300 text-slate-600 px-3 rounded-lg font-bold text-sm hidden hover:bg-slate-400"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
                         </div>
                         <div class="overflow-y-auto max-h-60 border rounded-xl"><table class="w-full text-sm text-left"><tbody id="config-prod-list" class="divide-y divide-gray-100 text-slate-700"></tbody></table></div>
                     </div>
                     <!-- Vendedores -->
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                        <h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2 flex justify-between"><span>2. Vendedores</span> <span id="seller-mode-badge" class="text-[9px] bg-slate-100 px-2 py-0.5 rounded text-slate-400">CREAR</span></h3>
+                        <h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2 flex justify-between">
+                            <span>2. Vendedores</span> <span id="seller-mode-badge" class="text-[9px] bg-slate-100 px-2 py-0.5 rounded text-slate-400 font-bold">CREAR</span>
+                        </h3>
                         <div class="bg-slate-50 p-4 rounded-xl mb-4 border border-slate-100 flex flex-col md:flex-row gap-2">
-                            <input type="hidden" id="edit-seller-id"><input type="text" id="new-seller-name" placeholder="Nombre" class="flex-grow border rounded-lg px-3 py-2 text-sm"><div class="flex gap-2"><input type="tel" id="new-seller-phone" placeholder="Celular" class="w-32 border rounded-lg px-3 py-2 text-sm"><button id="btn-seller-action" class="bg-slate-800 text-white px-4 rounded-lg font-bold text-sm shadow-md">Crear</button><button id="btn-seller-cancel" onclick="cancelEdit('seller')" class="bg-slate-300 text-slate-600 px-3 rounded-lg font-bold text-sm hidden"><i class="fa-solid fa-xmark"></i></button></div>
+                            <input type="hidden" id="edit-seller-id">
+                            <input type="text" id="new-seller-name" placeholder="Nombre" class="flex-grow border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400">
+                            <div class="flex gap-2">
+                                <input type="tel" id="new-seller-phone" placeholder="Celular" class="w-32 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400">
+                                <button id="btn-seller-action" class="bg-slate-800 text-white px-4 rounded-lg font-bold text-sm shadow-md transition">Crear</button>
+                                <button id="btn-seller-cancel" onclick="cancelEdit('seller')" class="bg-slate-300 text-slate-600 px-3 rounded-lg font-bold text-sm hidden hover:bg-slate-400"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
                         </div>
                         <div class="overflow-y-auto max-h-60"><ul id="config-seller-list" class="space-y-2"></ul></div>
                     </div>
                     <!-- Distribución -->
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200"><h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2">3. Distribución</h3><div class="space-y-4"><div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Admin: <span id="display-admin-pct" class="text-indigo-600">60%</span></label><input type="range" id="range-admin" min="0" max="100" value="60" oninput="updateConfigRange('admin')" class="w-full h-1.5 bg-slate-200 rounded-lg"></div><div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Vendedor: <span id="display-seller-pct" class="text-emerald-600">40%</span></label><input type="range" id="range-seller" min="0" max="100" value="40" oninput="updateConfigRange('seller')" class="w-full h-1.5 bg-slate-200 rounded-lg"></div><button id="btn-save-config" class="w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest">Guardar Cambios</button></div></div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200"><h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2">3. Distribución</h3><div class="space-y-4"><div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Admin: <span id="display-admin-pct" class="text-indigo-600">60%</span></label><input type="range" id="range-admin" min="0" max="100" value="60" oninput="updateConfigRange('admin')" class="w-full h-1.5 bg-slate-200 rounded-lg accent-indigo-600"></div><div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Vendedor: <span id="display-seller-pct" class="text-emerald-600">40%</span></label><input type="range" id="range-seller" min="0" max="100" value="40" oninput="updateConfigRange('seller')" class="w-full h-1.5 bg-slate-200 rounded-lg accent-emerald-500"></div><button id="btn-save-config" class="w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-black transition shadow-lg">Guardar Cambios</button></div></div>
                 </div>
             </div>
 
@@ -167,119 +220,76 @@
         </div>
     </main>
 
+    <!-- TOAST DE NOTIFICACIÓN -->
     <div id="toast" class="fixed bottom-8 right-1/2 translate-x-1/2 md:translate-x-0 md:right-8 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl translate-y-40 transition-transform duration-500 z-50 flex items-center gap-3 whitespace-nowrap"><div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white"><i class="fa-solid fa-check text-xs"></i></div><p class="text-xs md:text-sm font-bold">¡Hecho!</p></div>
 
-    <!-- SCRIPT HÍBRIDO (LOCAL + CLOUD) -->
+    <!-- FIREBASE & LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, onSnapshot, doc, updateDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-        // ==========================================
-        //  CONFIGURACIÓN FIREBASE (PEGAR AQUÍ)
-        // ==========================================
-        const firebaseConfig = 
-            {
-  apiKey: "AIzaSyDrMs4FRGpGeVGw1gWLltOWZlQVeYFpQf8",
-  authDomain: "kgb-system.firebaseapp.com",
-  projectId: "kgb-system",
-  storageBucket: "kgb-system.firebasestorage.app",
-  messagingSenderId: "850376757764",
-  appId: "1:850376757764:web:0976c465dd91a236405b51",
-  measurementId: "G-6SCRBS3GQ9"
-
+        // ===============================================
+        // LLAVE FIREBASE INTEGRADA
+        // ===============================================
+        const firebaseConfig = {
+          apiKey: "AIzaSyDrMs4FRGpGeVGw1gWLltOWZlQVeYFpQf8",
+          authDomain: "kgb-system.firebaseapp.com",
+          projectId: "kgb-system",
+          storageBucket: "kgb-system.firebasestorage.app",
+          messagingSenderId: "850376757764",
+          appId: "1:850376757764:web:0976c465dd91a236405b51",
+          measurementId: "G-6SCRBS3GQ9"
         };
-        // ==========================================
 
-        // --- SISTEMA DUAL ---
-        let db = null;
-        let STATE = JSON.parse(localStorage.getItem('kgb_local_db')) || { sellers: [], products: [], sales: [], config: { adminPct: 0.60, sellerPct: 0.40 } };
+        // --- INIT ---
+        let db;
+        let STATE = { sellers: [], products: [], sales: [], config: { adminPct: 0.60, sellerPct: 0.40 } };
 
-        // 1. Intentar Conexión Nube
         try {
-            if (Object.keys(firebaseConfig).length > 0) {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                setupCloudListeners();
-                updateStatus(true);
-            } else {
-                updateStatus(false);
-            }
-        } catch (e) { console.error("Modo Offline"); updateStatus(false); }
-
-        function updateStatus(isCloud) {
-            const dot = document.getElementById('status-dot');
-            const txt = document.getElementById('status-text');
-            if (isCloud) {
-                dot.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse";
-                txt.innerText = "MODO NUBE";
-                txt.classList.replace('text-gray-500', 'text-green-600');
-            } else {
-                dot.className = "w-2.5 h-2.5 rounded-full bg-red-500";
-                txt.innerText = "MODO LOCAL";
-            }
-            refreshUI(); // Cargar datos iniciales
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            setupListeners();
+            document.getElementById('loader').classList.add('hidden');
+        } catch (e) {
+            console.error("Error Firebase:", e);
+            document.getElementById('loader').innerHTML = `<p class="text-red-400 font-bold">Error de Conexión</p>`;
         }
 
-        function saveLocal() {
-            localStorage.setItem('kgb_local_db', JSON.stringify(STATE));
-            refreshUI();
-        }
-
-        // --- CLOUD SYNC ---
-        function setupCloudListeners() {
-            onSnapshot(collection(db, "kgb_sellers"), (s) => { 
-                STATE.sellers = s.docs.map(d => ({id: d.id, ...d.data()})).filter(x => x.active); 
-                saveLocal(); 
+        // --- LISTENERS REAL-TIME ---
+        function setupListeners() {
+            // Vendedores
+            onSnapshot(collection(db, "kgb_sellers"), (s) => {
+                STATE.sellers = s.docs.map(d => ({id: d.id, ...d.data()})).filter(x => x.active);
+                refreshUI();
             });
-            onSnapshot(collection(db, "kgb_products"), (s) => { 
-                STATE.products = s.docs.map(d => ({id: d.id, ...d.data()})).filter(x => x.active); 
-                saveLocal(); 
+            // Productos
+            onSnapshot(collection(db, "kgb_products"), (s) => {
+                STATE.products = s.docs.map(d => ({id: d.id, ...d.data()})).filter(x => x.active);
+                refreshUI();
             });
+            // Config
+            onSnapshot(doc(db, "kgb_config", "main"), (s) => {
+                if(s.exists()) { STATE.config = s.data(); updateConfigInputs(); }
+                else setDoc(doc(db, "kgb_config", "main"), { adminPct: 0.6, sellerPct: 0.4 });
+            });
+            // Ventas
             const q = query(collection(db, "kgb_sales"), orderBy("date", "desc"));
-            onSnapshot(q, (s) => { 
-                STATE.sales = s.docs.map(d => ({id: d.id, ...d.data()})); 
-                saveLocal(); 
-            });
-            onSnapshot(doc(db, "kgb_config", "main"), (s) => { 
-                if(s.exists()) { STATE.config = s.data(); saveLocal(); updateConfigInputs(); }
+            onSnapshot(q, (s) => {
+                STATE.sales = s.docs.map(d => ({id: d.id, ...d.data()}));
+                renderHistoryTable();
+                updateDashboard();
             });
         }
 
-        // --- CRUD UNIFICADO (NUBE O LOCAL) ---
-        async function saveData(collectionName, data) {
-            // 1. Guardar Localmente Primero (Optimistic UI)
-            if(collectionName === 'kgb_sales') STATE.sales.unshift({...data, id: Date.now().toString()}); // Temp ID
-            // ... lógica local simplificada para demo ...
-            saveLocal();
-
-            // 2. Intentar Nube
-            if (db) {
-                try {
-                    if (collectionName === 'kgb_config') await setDoc(doc(db, "kgb_config", "main"), data);
-                    else await addDoc(collection(db, collectionName), data);
-                    showToast("Guardado en Nube");
-                } catch (e) { showToast("Error Nube -> Guardado Local"); }
-            } else {
-                showToast("Guardado Localmente");
-            }
-        }
-        
-        async function updateData(collectionName, id, data) {
-            if (db) await updateDoc(doc(db, collectionName, id), data);
-            // Actualizar local
-            if (collectionName === 'kgb_sellers') { const i = STATE.sellers.findIndex(x=>x.id===id); if(i>-1) Object.assign(STATE.sellers[i], data); }
-            if (collectionName === 'kgb_products') { const i = STATE.products.findIndex(x=>x.id===id); if(i>-1) Object.assign(STATE.products[i], data); }
-            saveLocal();
-        }
-
-        // --- UI UTILS ---
+        // --- FUNCIONES GLOBALES ---
         window.toggleMobileMenu = () => { const s=document.getElementById('sidebar'), o=document.getElementById('mobile-overlay'); if(s.classList.contains('-translate-x-full')){s.classList.remove('-translate-x-full');o.classList.remove('hidden');}else{s.classList.add('-translate-x-full');o.classList.add('hidden');} };
         window.closeMobileMenu = () => { document.getElementById('sidebar').classList.add('-translate-x-full'); document.getElementById('mobile-overlay').classList.add('hidden'); };
         window.switchAppTab = (t) => { document.querySelectorAll('.app-tab').forEach(e=>e.classList.add('hidden')); document.getElementById('tab-'+t).classList.remove('hidden'); document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active','bg-indigo-700','text-white')); document.getElementById('nav-'+t).classList.add('active','bg-indigo-700','text-white'); if(t==='history') renderHistoryTable(); if(window.innerWidth<768) closeMobileMenu(); };
         window.showToast = (m) => { const t=document.getElementById('toast');t.querySelector('p').innerText=m;t.classList.remove('translate-y-40');setTimeout(()=>t.classList.add('translate-y-40'),3000); };
-        function refreshUI() { renderPosSelects(); renderFilterSeller(); renderSellerList(); renderProductList(); updatePosCalc(); updateDashboard(); }
+        
+        function refreshUI() { renderPosSelects(); renderFilterSeller(); renderSellerList(); renderProductList(); updatePosCalc(); }
 
-        // --- POS ---
+        // --- LOGIC: POS ---
         window.updatePosCalc = () => {
             const idx = document.getElementById('pos-product').value;
             if(idx === "" || !STATE.products[idx]) { document.getElementById('pos-cost').value='0.00'; document.getElementById('pos-price').value='0.00'; document.getElementById('pos-profit').innerText='0.00'; return; }
@@ -291,48 +301,51 @@
 
         document.getElementById('btn-submit').onclick = async () => {
             const idx = document.getElementById('pos-product').value; const sId = document.getElementById('pos-seller').value; if(idx==="" || sId==="") return alert("Faltan datos");
-            const p = STATE.products[idx]; const s = STATE.sellers.find(x => x.id === sId) || {name: 'Local', phone: ''}; 
+            const p = STATE.products[idx]; 
+            const s = STATE.sellers.find(x => x.id === sId) || STATE.sellers[sId]; // Match by ID or Index
+            
             const price = parseFloat(document.getElementById('pos-price').value); const prof = price - p.cost;
-
-            const sale = {
-                date: new Date().toISOString(), seller: s.name, sellerPhone: s.phone, product: p.name, cost: p.cost, price: price, profit: prof,
-                admin: prof*STATE.config.adminPct, comm: prof*STATE.config.sellerPct, client: document.getElementById('pos-client').value, phone: document.getElementById('pos-phone').value, status: 'active'
-            };
-            await saveData('kgb_sales', sale);
-            document.getElementById('pos-client').value=''; document.getElementById('pos-phone').value='';
+            try { await addDoc(collection(db, "kgb_sales"), { 
+                date: new Date().toISOString(), seller: s.name, sellerPhone: s.phone, product: p.name, 
+                cost: p.cost, price: price, profit: prof, admin: prof*STATE.config.adminPct, 
+                comm: prof*STATE.config.sellerPct, client: document.getElementById('pos-client').value, 
+                phone: document.getElementById('pos-phone').value, status: 'active' 
+            }); showToast("Venta Registrada"); document.getElementById('pos-client').value=''; document.getElementById('pos-phone').value=''; } catch(e) { alert("Error al guardar"); }
         };
 
-        // --- ACTIONS ---
+        // --- LOGIC: CONFIG & ACTIONS ---
         document.getElementById('btn-seller-action').onclick = async () => {
             const id = document.getElementById('edit-seller-id').value; const name = document.getElementById('new-seller-name').value; const phone = document.getElementById('new-seller-phone').value; if(!name) return;
-            if(id) { await updateData('kgb_sellers', id, {name, phone}); showToast("Editado"); cancelEdit('seller'); } 
-            else { await saveData('kgb_sellers', { name, phone, active: true }); }
+            if(id) { await updateDoc(doc(db, "kgb_sellers", id), { name, phone }); showToast("Actualizado"); cancelEdit('seller'); } 
+            else { await addDoc(collection(db, "kgb_sellers"), { name, phone, active: true }); showToast("Creado"); }
             document.getElementById('new-seller-name').value=''; document.getElementById('new-seller-phone').value='';
         };
         document.getElementById('btn-prod-action').onclick = async () => {
             const id = document.getElementById('edit-prod-id').value; const name = document.getElementById('new-prod-name').value; const cost = parseFloat(document.getElementById('new-prod-cost').value); const price = parseFloat(document.getElementById('new-prod-price').value); if(!name) return;
-            if(id) { await updateData('kgb_products', id, {name, cost, price}); showToast("Editado"); cancelEdit('prod'); } 
-            else { await saveData('kgb_products', { name, cost, price, active: true }); }
+            if(id) { await updateDoc(doc(db, "kgb_products", id), { name, cost, price }); showToast("Actualizado"); cancelEdit('prod'); } 
+            else { await addDoc(collection(db, "kgb_products"), { name, cost, price, active: true }); showToast("Creado"); }
             document.getElementById('new-prod-name').value='';
         };
-        document.getElementById('btn-save-config').onclick = async () => { 
-            const d = { adminPct: document.getElementById('range-admin').value / 100, sellerPct: document.getElementById('range-seller').value / 100 };
-            await saveData('kgb_config', d); 
-        };
+        document.getElementById('btn-save-config').onclick = async () => { await setDoc(doc(db, "kgb_config", "main"), { adminPct: document.getElementById('range-admin').value / 100, sellerPct: document.getElementById('range-seller').value / 100 }); showToast("Guardado"); };
 
-        window.deleteItem = async (c, id) => { if(confirm("¿Eliminar?")) await updateData(c, id, { active: false }); };
-        window.refundSale = async (id) => { if(confirm("¿Anular?")) await updateData('kgb_sales', id, { status: 'REFUNDED' }); };
+        window.deleteItem = async (c, id) => { if(confirm("¿Eliminar?")) await updateDoc(doc(db, c, id), { active: false }); };
+        window.refundSale = async (id) => { if(confirm("¿Anular?")) await updateDoc(doc(db, "kgb_sales", id), { status: 'REFUNDED' }); };
 
         window.prepareEdit = (t, id) => {
-            if(t==='seller') { const s = STATE.sellers.find(x=>x.id===id); document.getElementById('edit-seller-id').value=id; document.getElementById('new-seller-name').value=s.name; document.getElementById('new-seller-phone').value=s.phone; document.getElementById('btn-seller-action').innerText="Actualizar"; document.getElementById('btn-seller-cancel').classList.remove('hidden'); document.getElementById('seller-mode-badge').innerText="EDITANDO"; }
-            else { const p = STATE.products.find(x=>x.id===id); document.getElementById('edit-prod-id').value=id; document.getElementById('new-prod-name').value=p.name; document.getElementById('new-prod-cost').value=p.cost; document.getElementById('new-prod-price').value=p.price; document.getElementById('btn-prod-action').innerText="Actualizar"; document.getElementById('btn-prod-cancel').classList.remove('hidden'); document.getElementById('prod-mode-badge').innerText="EDITANDO"; }
+            if(t==='seller') { const s = STATE.sellers.find(x=>x.id===id); document.getElementById('edit-seller-id').value=id; document.getElementById('new-seller-name').value=s.name; document.getElementById('new-seller-phone').value=s.phone; document.getElementById('seller-mode-badge').innerText="EDITANDO"; document.getElementById('btn-seller-action').innerText="Actualizar"; document.getElementById('btn-seller-action').classList.replace('bg-slate-800', 'bg-blue-600'); document.getElementById('btn-seller-cancel').classList.remove('hidden'); }
+            else { const p = STATE.products.find(x=>x.id===id); document.getElementById('edit-prod-id').value=id; document.getElementById('new-prod-name').value=p.name; document.getElementById('new-prod-cost').value=p.cost; document.getElementById('new-prod-price').value=p.price; document.getElementById('prod-mode-badge').innerText="EDITANDO"; document.getElementById('btn-prod-action').innerText="Actualizar"; document.getElementById('btn-prod-action').classList.replace('bg-indigo-600', 'bg-blue-600'); document.getElementById('btn-prod-cancel').classList.remove('hidden'); }
         };
-        window.cancelEdit = (t) => { document.getElementById(t==='seller'?'edit-seller-id':'edit-prod-id').value=''; document.getElementById(t==='seller'?'new-seller-name':'new-prod-name').value=''; document.getElementById(`btn-${t}-action`).innerText=t==='prod'?'Agregar':'Crear'; document.getElementById(`btn-${t}-cancel`).classList.add('hidden'); document.getElementById(`${t}-mode-badge`).innerText="CREAR"; };
+        window.cancelEdit = (t) => { 
+            document.getElementById(t==='seller'?'edit-seller-id':'edit-prod-id').value=''; document.getElementById(t==='seller'?'new-seller-name':'new-prod-name').value=''; 
+            document.getElementById(`${t}-mode-badge`).innerText="CREAR"; document.getElementById(`btn-${t}-action`).innerText=t==='prod'?'Agregar':'Crear'; document.getElementById(`btn-${t}-cancel`).classList.add('hidden');
+            if(t==='seller') document.getElementById('btn-seller-action').classList.replace('bg-blue-600', 'bg-slate-800');
+            else document.getElementById('btn-prod-action').classList.replace('bg-blue-600', 'bg-indigo-600');
+        };
 
         // Renders
-        function renderPosSelects() { const sel = document.getElementById('pos-seller'); const pro = document.getElementById('pos-product'); sel.innerHTML = STATE.sellers.map(s => `<option value="${s.id}">${s.name}</option>`).join(''); pro.innerHTML = '<option value="">Seleccione...</option>' + STATE.products.map((p, i) => `<option value="${i}">${p.name}</option>`).join(''); }
-        function renderSellerList() { document.getElementById('config-seller-list').innerHTML = STATE.sellers.map(s => `<li class="flex justify-between items-center p-3 bg-slate-50 border rounded-lg text-sm"><div><span class="font-bold block">${s.name}</span><span class="text-xs text-slate-400">${s.phone}</span></div><div class="flex gap-2"><button onclick="prepareEdit('seller','${s.id}')" class="text-blue-500"><i class="fa-solid fa-pen"></i></button><button onclick="deleteItem('kgb_sellers','${s.id}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button></div></li>`).join(''); }
-        function renderProductList() { document.getElementById('config-prod-list').innerHTML = STATE.products.map(p => `<tr class="border-b"><td class="p-3 font-bold">${p.name}</td><td class="p-3 text-center">${p.cost}</td><td class="p-3 text-center font-bold text-indigo-600">${p.price}</td><td class="p-3 text-right"><button onclick="prepareEdit('prod','${p.id}')" class="text-blue-500 mr-2"><i class="fa-solid fa-pen"></i></button><button onclick="deleteItem('kgb_products','${p.id}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`).join(''); }
+        function renderPosSelects() { const sel = document.getElementById('pos-seller'); const pro = document.getElementById('pos-product'); sel.innerHTML = STATE.sellers.map((s,i) => `<option value="${s.id}">${s.name}</option>`).join(''); pro.innerHTML = '<option value="">Seleccione...</option>' + STATE.products.map((p, i) => `<option value="${i}">${p.name}</option>`).join(''); }
+        function renderSellerList() { document.getElementById('config-seller-list').innerHTML = STATE.sellers.map(s => `<li class="flex justify-between items-center p-3 bg-slate-50 border rounded-lg text-sm"><div><span class="font-bold block">${s.name}</span><span class="text-xs text-slate-400">${s.phone}</span></div><div class="flex gap-2"><button onclick="prepareEdit('seller','${s.id}')" class="text-blue-500 border p-1 rounded hover:bg-blue-50"><i class="fa-solid fa-pen"></i></button><button onclick="deleteItem('kgb_sellers','${s.id}')" class="text-red-500 border p-1 rounded hover:bg-red-50"><i class="fa-solid fa-trash"></i></button></div></li>`).join(''); }
+        function renderProductList() { document.getElementById('config-prod-list').innerHTML = STATE.products.map(p => `<tr class="border-b"><td class="p-3 font-bold">${p.name}</td><td class="p-3 text-center">${p.cost}</td><td class="p-3 text-center font-bold text-indigo-600">${p.price}</td><td class="p-3 text-right"><button onclick="prepareEdit('prod','${p.id}')" class="text-blue-500 border p-1 rounded hover:bg-blue-50 mr-2"><i class="fa-solid fa-pen"></i></button><button onclick="deleteItem('kgb_products','${p.id}')" class="text-red-500 border p-1 rounded hover:bg-red-50"><i class="fa-solid fa-trash"></i></button></td></tr>`).join(''); }
         function updateConfigInputs() { document.getElementById('range-admin').value = STATE.config.adminPct * 100; document.getElementById('range-seller').value = STATE.config.sellerPct * 100; }
         
         window.renderHistoryTable = () => {
