@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KGB STREAMING v9.0 | Unlocked</title>
+    <title>KGB STREAMING v11.1 | Fixed</title>
     <!-- LIBRERÍAS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,13 +16,11 @@
         .nav-item.active { background-color: #4338ca; color: white; border-left: 4px solid #a5b4fc; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); }
         .refunded-row { background-color: #fee2e2 !important; color: #991b1b !important; text-decoration: line-through; opacity: 0.7; }
         
-        /* Sidebar y Transiciones */
+        /* Transiciones */
         #sidebar { transition: transform 0.3s ease-in-out; }
         #mobile-overlay { transition: opacity 0.3s ease-in-out; }
-        
-        /* Loader no bloqueante por defecto */
-        #loader { z-index: 100; transition: opacity 0.3s; pointer-events: none; opacity: 0; }
-        #loader.active { pointer-events: all; opacity: 1; }
+        #sync-indicator { transition: opacity 0.5s; pointer-events: none; opacity: 0; }
+        #sync-indicator.active { opacity: 1; }
 
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -31,10 +29,10 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-800 bg-slate-50">
 
-    <!-- LOADER (Inicia oculto) -->
-    <div id="loader" class="fixed inset-0 bg-slate-900/90 flex flex-col items-center justify-center text-white">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-500 mb-4"></div>
-        <h2 class="text-xl font-bold tracking-widest">PROCESANDO...</h2>
+    <!-- INDICADOR DE CARGA (Google Sheets) -->
+    <div id="sync-indicator" class="fixed top-4 right-4 z-[100] bg-white text-slate-800 text-xs px-3 py-2 rounded-full shadow-xl border border-slate-100 flex items-center gap-3">
+        <div class="animate-spin rounded-full h-4 w-4 border-2 border-indigo-600 border-t-transparent"></div>
+        <span class="font-bold text-indigo-800">Sincronizando...</span>
     </div>
 
     <!-- OVERLAY MÓVIL -->
@@ -52,27 +50,26 @@
         <!-- Logo -->
         <div class="h-28 flex items-center justify-center border-b border-slate-800 p-4 bg-slate-950 hidden md:flex relative group">
             <div class="text-center">
-                <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg mx-auto mb-2"><i class="fa-solid fa-play"></i></div>
-                <h1 class="text-sm font-black text-white tracking-widest">KGB SYSTEM</h1>
+                <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg mx-auto mb-2"><i class="fa-solid fa-file-csv"></i></div>
+                <h1 class="text-sm font-black text-white tracking-widest">KGB SHEETS</h1>
             </div>
         </div>
 
-        <!-- NAVEGACIÓN (BOTONES) -->
+        <!-- NAVEGACIÓN -->
         <div class="flex-1 overflow-y-auto px-4 py-6 space-y-3">
             <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">Operaciones</div>
-            <!-- Los onclick llaman a funciones globales definidas en el SCRIPT UI al final -->
-            <button onclick="switchTab('pos')" id="nav-pos" class="nav-item active w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition active bg-indigo-700 text-white font-bold shadow-lg">
+            <button onclick="switchTab('pos')" id="btn-nav-pos" class="nav-item active w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition active bg-indigo-700 text-white font-bold shadow-lg">
                 <i class="fa-solid fa-cart-shopping w-5 mr-3"></i> <span>Venta Nueva</span>
             </button>
-            <button onclick="switchTab('history')" id="nav-history" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
+            <button onclick="switchTab('history')" id="btn-nav-history" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
                 <i class="fa-solid fa-list-check w-5 mr-3"></i> <span>Historial</span>
             </button>
             
             <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2 mt-6">Gestión</div>
-            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
+            <button onclick="switchTab('dashboard')" id="btn-nav-dashboard" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
                 <i class="fa-solid fa-chart-pie w-5 mr-3"></i> <span>Reportes</span>
             </button>
-            <button onclick="switchTab('config')" id="nav-config" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
+            <button onclick="switchTab('config')" id="btn-nav-config" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
                 <i class="fa-solid fa-sliders w-5 mr-3"></i> <span>Configuración</span>
             </button>
         </div>
@@ -80,7 +77,7 @@
         <div class="p-5 bg-black/20 border-t border-slate-800 text-center text-xs">
             <div class="flex items-center justify-center gap-2 mb-1">
                 <div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-orange-500"></div>
-                <span id="status-text" class="font-bold text-slate-300">Iniciando...</span>
+                <span id="status-text" class="font-bold text-slate-300">Conectando...</span>
             </div>
             <p class="text-indigo-500 font-bold">José Vizcarra</p>
         </div>
@@ -94,12 +91,14 @@
             </button>
             <div>
                 <h1 class="text-lg md:text-xl font-black text-slate-900 tracking-tight leading-none">KGB <span class="text-indigo-600">STREAMING</span></h1>
-                <p class="text-[9px] text-slate-400 font-bold hidden sm:block">Panel de Control v9.0</p>
+                <p class="text-[9px] text-slate-400 font-bold hidden sm:block">Panel de Control v11.1</p>
             </div>
         </div>
-        <div class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full border hidden sm:block">
-            <span id="clock">--:--</span>
-        </div>
+        
+        <!-- Botón forzar sincronización -->
+        <button onclick="DATA.forceSync()" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 hover:bg-indigo-100 transition flex items-center gap-2">
+            <i class="fa-solid fa-rotate"></i> Sync
+        </button>
     </header>
 
     <!-- MAIN CONTENT -->
@@ -107,7 +106,7 @@
         <div class="max-w-6xl mx-auto pb-20">
             
             <!-- 1. POS -->
-            <div id="tab-pos" class="app-tab w-full max-w-3xl mx-auto">
+            <div id="view-pos" class="view-section w-full max-w-3xl mx-auto">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-5 border-b border-gray-100 flex justify-between items-center">
                         <h2 class="text-base md:text-lg font-black text-slate-800 flex gap-2"><i class="fa-solid fa-cash-register text-indigo-600"></i> REGISTRAR</h2>
@@ -116,12 +115,12 @@
                     <div class="p-6 md:p-8 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Vendedor</label><select id="pos-seller" class="w-full border p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition"></select></div>
-                            <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Plataforma</label><select id="pos-product" onchange="updatePosCalc()" class="w-full border p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition"></select></div>
+                            <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Plataforma</label><select id="pos-product" onchange="UI.updatePosCalc()" class="w-full border p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition"></select></div>
                         </div>
                         <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-lg relative overflow-hidden">
                             <div class="grid grid-cols-3 gap-2 text-center relative z-10">
                                 <div><p class="text-[9px] text-slate-400 font-bold uppercase mb-1">COSTO</p><input id="pos-cost" readonly class="w-full bg-transparent text-center font-mono text-lg font-bold text-slate-400 outline-none" value="0.00"></div>
-                                <div class="border-x border-slate-700"><p class="text-[9px] text-indigo-400 font-bold uppercase mb-1">VENTA</p><input id="pos-price" type="number" oninput="reCalcProfitOnly()" class="w-full bg-transparent text-center font-mono text-2xl font-bold text-white outline-none focus:text-indigo-400 transition" value="0.00"></div>
+                                <div class="border-x border-slate-700"><p class="text-[9px] text-indigo-400 font-bold uppercase mb-1">VENTA</p><input id="pos-price" type="number" oninput="UI.reCalcProfitOnly()" class="w-full bg-transparent text-center font-mono text-2xl font-bold text-white outline-none focus:text-indigo-400 transition" value="0.00"></div>
                                 <div><p class="text-[9px] text-emerald-400 font-bold uppercase mb-1">GANANCIA</p><p id="pos-profit" class="font-mono text-xl font-bold text-emerald-400 mt-1">0.00</p></div>
                             </div>
                         </div>
@@ -129,20 +128,20 @@
                             <input type="text" id="pos-client" placeholder="Nombre Cliente" class="border p-3 rounded-xl text-sm w-full outline-none focus:border-indigo-500 transition">
                             <input type="tel" id="pos-phone" placeholder="Teléfono Cliente" class="border p-3 rounded-xl text-sm w-full outline-none focus:border-indigo-500 transition">
                         </div>
-                        <button id="btn-submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition text-sm uppercase tracking-widest active:scale-[0.98]">Confirmar Venta</button>
+                        <button onclick="DATA.submitSale()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition text-sm uppercase tracking-widest active:scale-[0.98]">Confirmar Venta</button>
                     </div>
                 </div>
             </div>
 
             <!-- 2. HISTORY -->
-            <div id="tab-history" class="app-tab hidden w-full">
-                <h2 class="text-xl font-black text-slate-800 mb-4 flex gap-2 items-center"><i class="fa-solid fa-list-check text-indigo-500"></i> Historial (Nube)</h2>
+            <div id="view-history" class="view-section hidden w-full">
+                <h2 class="text-xl font-black text-slate-800 mb-4 flex gap-2 items-center"><i class="fa-solid fa-list-check text-indigo-500"></i> Historial</h2>
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
-                        <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Desde</label><input type="date" id="filter-start" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></div>
-                        <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Hasta</label><input type="date" id="filter-end" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></div>
-                        <div class="col-span-2 md:col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Vendedor</label><select id="filter-seller" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></select></div>
-                        <button onclick="exportToExcel()" class="col-span-2 md:col-span-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold shadow flex justify-center items-center gap-2 text-xs h-[34px] transition"><i class="fa-solid fa-file-excel"></i> Exportar</button>
+                        <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Desde</label><input type="date" id="filter-start" onchange="UI.renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></div>
+                        <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Hasta</label><input type="date" id="filter-end" onchange="UI.renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></div>
+                        <div class="col-span-2 md:col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Vendedor</label><select id="filter-seller" onchange="UI.renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></select></div>
+                        <button onclick="UI.exportToExcel()" class="col-span-2 md:col-span-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold shadow flex justify-center items-center gap-2 text-xs h-[34px] transition"><i class="fa-solid fa-file-excel"></i> Exportar</button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -150,7 +149,7 @@
                         <div class="overflow-x-auto flex-1">
                             <table class="w-full text-sm text-left whitespace-nowrap">
                                 <thead class="bg-slate-50 text-xs text-slate-500 uppercase sticky top-0 z-10 font-bold"><tr><th class="p-4">Detalle</th><th class="p-4">Cliente</th><th class="p-4 text-right">Comisión</th><th class="p-4 text-center">Acción</th></tr></thead>
-                                <tbody id="history-table-body" class="divide-y divide-gray-100"></tbody>
+                                <tbody id="history-body" class="divide-y divide-gray-100"></tbody>
                             </table>
                         </div>
                     </div>
@@ -167,7 +166,7 @@
             </div>
 
             <!-- 3. CONFIG -->
-            <div id="tab-config" class="app-tab hidden w-full pb-20">
+            <div id="view-config" class="view-section hidden w-full pb-20">
                 <h2 class="text-xl font-black text-slate-800 mb-6">CONFIGURACIÓN</h2>
                 <div class="flex flex-col gap-6">
                     <!-- Plataformas -->
@@ -181,8 +180,8 @@
                             <div class="flex gap-2">
                                 <input type="number" id="new-prod-cost" placeholder="Costo" class="w-20 border rounded-lg px-2 py-2 text-sm text-center outline-none focus:ring-2 focus:ring-indigo-500">
                                 <input type="number" id="new-prod-price" placeholder="Venta" class="w-20 border rounded-lg px-2 py-2 text-sm text-center outline-none focus:ring-2 focus:ring-indigo-500">
-                                <button id="btn-prod-action" class="bg-indigo-600 text-white px-4 rounded-lg font-bold text-sm shadow-md transition">Agregar</button>
-                                <button id="btn-prod-cancel" onclick="cancelEdit('prod')" class="bg-slate-300 text-slate-600 px-3 rounded-lg font-bold text-sm hidden hover:bg-slate-400"><i class="fa-solid fa-xmark"></i></button>
+                                <button id="btn-prod-action" onclick="DATA.addProd()" class="bg-indigo-600 text-white px-4 rounded-lg font-bold text-sm shadow-md transition">Agregar</button>
+                                <button id="btn-prod-cancel" onclick="UI.cancelEdit('prod')" class="bg-slate-300 text-slate-600 px-3 rounded-lg font-bold text-sm hidden hover:bg-slate-400"><i class="fa-solid fa-xmark"></i></button>
                             </div>
                         </div>
                         <div class="overflow-y-auto max-h-60 border rounded-xl"><table class="w-full text-sm text-left"><tbody id="config-prod-list" class="divide-y divide-gray-100 text-slate-700"></tbody></table></div>
@@ -197,19 +196,19 @@
                             <input type="text" id="new-seller-name" placeholder="Nombre" class="flex-grow border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400">
                             <div class="flex gap-2">
                                 <input type="tel" id="new-seller-phone" placeholder="Celular" class="w-32 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400">
-                                <button id="btn-seller-action" class="bg-slate-800 text-white px-4 rounded-lg font-bold text-sm shadow-md transition">Crear</button>
-                                <button id="btn-seller-cancel" onclick="cancelEdit('seller')" class="bg-slate-300 text-slate-600 px-3 rounded-lg font-bold text-sm hidden hover:bg-slate-400"><i class="fa-solid fa-xmark"></i></button>
+                                <button id="btn-seller-action" onclick="DATA.addSeller()" class="bg-slate-800 text-white px-4 rounded-lg font-bold text-sm shadow-md transition">Crear</button>
+                                <button id="btn-seller-cancel" onclick="UI.cancelEdit('seller')" class="bg-slate-300 text-slate-600 px-3 rounded-lg font-bold text-sm hidden hover:bg-slate-400"><i class="fa-solid fa-xmark"></i></button>
                             </div>
                         </div>
                         <div class="overflow-y-auto max-h-60"><ul id="config-seller-list" class="space-y-2"></ul></div>
                     </div>
                     <!-- Distribución -->
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200"><h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2">3. Distribución</h3><div class="space-y-4"><div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Admin: <span id="display-admin-pct" class="text-indigo-600">60%</span></label><input type="range" id="range-admin" min="0" max="100" value="60" oninput="updateConfigRange('admin')" class="w-full h-1.5 bg-slate-200 rounded-lg accent-indigo-600"></div><div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Vendedor: <span id="display-seller-pct" class="text-emerald-600">40%</span></label><input type="range" id="range-seller" min="0" max="100" value="40" oninput="updateConfigRange('seller')" class="w-full h-1.5 bg-slate-200 rounded-lg accent-emerald-500"></div><button id="btn-save-config" class="w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-black transition shadow-lg">Guardar Cambios</button></div></div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200"><h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2">3. Distribución</h3><div class="space-y-4"><div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Admin: <span id="display-admin-pct" class="text-indigo-600">60%</span></label><input type="range" id="range-admin" min="0" max="100" value="60" oninput="UI.updateConfigRange('admin')" class="w-full h-1.5 bg-slate-200 rounded-lg accent-indigo-600"></div><div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Vendedor: <span id="display-seller-pct" class="text-emerald-600">40%</span></label><input type="range" id="range-seller" min="0" max="100" value="40" oninput="UI.updateConfigRange('seller')" class="w-full h-1.5 bg-slate-200 rounded-lg accent-emerald-500"></div><button onclick="DATA.saveConfig()" class="w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-black transition shadow-lg">Guardar Cambios</button></div></div>
                 </div>
             </div>
 
             <!-- 4. DASHBOARD -->
-            <div id="tab-dashboard" class="app-tab hidden w-full">
+            <div id="view-dashboard" class="view-section hidden w-full">
                 <h2 class="text-xl font-black text-slate-800 mb-6">REPORTES</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                     <div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[10px] text-slate-400 font-bold uppercase">Ventas</p><p id="dash-total" class="text-xl font-black text-slate-800">0.00</p></div>
@@ -224,221 +223,275 @@
 
     <div id="toast" class="fixed bottom-8 right-1/2 translate-x-1/2 md:translate-x-0 md:right-8 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl translate-y-40 transition-transform duration-500 z-50 flex items-center gap-3 whitespace-nowrap"><div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white"><i class="fa-solid fa-check text-xs"></i></div><p class="text-xs md:text-sm font-bold">¡Hecho!</p></div>
 
-    <!-- SCRIPT DE INTERFAZ (MENÚ) - SIEMPRE FUNCIONA -->
     <script>
-        // Funciones UI Globales (Fuera de Módulo para evitar bloqueos)
+        // ==========================================
+        //  ENLACE GOOGLE APPS SCRIPT
+        // ==========================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbyRxtBowlGzcSuJyVSwAS1IVczW6uqqtQ86gHRHtt_6ivytiYOPkrPnecC6bGEPGYot4w/exec";
+        
+        // --- ESTADO ---
+        const DEFAULT_DB = { sellers: [], products: [], sales: [], config: { adminPct: 0.60, sellerPct: 0.40 } };
+        let DB = JSON.parse(localStorage.getItem('kgb_v11_db')) || DEFAULT_DB;
+
+        // --- NAVEGACIÓN INDEPENDIENTE ---
+        function switchTab(id) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + id).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active', 'bg-indigo-700', 'text-white'));
+            const btn = document.getElementById('btn-nav-' + id);
+            if(btn) btn.classList.add('active', 'bg-indigo-700', 'text-white');
+            
+            if(id === 'pos') UI.renderPosSelects();
+            if(id === 'history') UI.renderHistoryTable();
+            if(id === 'config') UI.renderConfig();
+            if(id === 'dashboard') UI.updateDashboard();
+            
+            if(window.innerWidth < 768) toggleMobileMenu();
+        }
+
         function toggleMobileMenu() {
-            const s=document.getElementById('sidebar'), o=document.getElementById('mobile-overlay');
-            if(s.classList.contains('-translate-x-full')){s.classList.remove('-translate-x-full');o.classList.remove('hidden');}else{s.classList.add('-translate-x-full');o.classList.add('hidden');}
+            const sb=document.getElementById('sidebar'), ov=document.getElementById('mobile-overlay');
+            if(sb.classList.contains('-translate-x-full')){sb.classList.remove('-translate-x-full');ov.classList.remove('hidden');}else{sb.classList.add('-translate-x-full');ov.classList.add('hidden');}
         }
-        function closeMobileMenu() { document.getElementById('sidebar').classList.add('-translate-x-full'); document.getElementById('mobile-overlay').classList.add('hidden'); }
-        
-        function switchAppTab(t) { 
-            document.querySelectorAll('.app-tab').forEach(e=>e.classList.add('hidden')); 
-            document.getElementById('tab-'+t).classList.remove('hidden'); 
-            document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active','bg-indigo-700','text-white')); 
-            document.getElementById('nav-'+t).classList.add('active','bg-indigo-700','text-white'); 
-            if(t==='history' && window.renderHistoryTable) window.renderHistoryTable(); 
-            if(t==='dashboard' && window.updateDashboard) window.updateDashboard();
-            if(window.innerWidth<768) closeMobileMenu(); 
-        }
-        
-        function showToast(m) { const t=document.getElementById('toast');t.querySelector('p').innerText=m;t.classList.remove('translate-y-40');setTimeout(()=>t.classList.add('translate-y-40'),3000); }
-        
-        // Reloj
-        setInterval(()=> { const d=new Date(); document.getElementById('clock').innerText=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }, 1000);
-    </script>
+        function showToast(m) { const t=document.getElementById('toast');t.querySelector('p').innerText=m;t.classList.remove('translate-y-40');setTimeout(()=>t.classList.add('translate-y-40'),2500); }
+        function showSync(v) { const el=document.getElementById('sync-indicator'); if(v) el.classList.add('active'); else el.classList.remove('active'); }
 
-    <!-- FIREBASE MODULE -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, onSnapshot, doc, updateDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-        // ==========================================
-        //  TU LLAVE (YA INTEGRADA)
-        // ==========================================
-        const firebaseConfig = {
-          apiKey: "AIzaSyDrMs4FRGpGeVGw1gWLltOWZlQVeYFpQf8",
-          authDomain: "kgb-system.firebaseapp.com",
-          projectId: "kgb-system",
-          storageBucket: "kgb-system.firebasestorage.app",
-          messagingSenderId: "850376757764",
-          appId: "1:850376757764:web:80f62ecbe11b4f25405b51",
-          measurementId: "G-Y4WG6QN4KQ"
-        };
-
-        // --- INICIALIZACIÓN ---
-        let db = null;
-        let STATE = JSON.parse(localStorage.getItem('kgb_local_db_v8')) || { sellers: [], products: [], sales: [], config: { adminPct: 0.60, sellerPct: 0.40 } };
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            setupCloudListeners();
-            updateStatus(true);
-            document.getElementById('loader').classList.add('hidden'); // Ocultar loader al conectar
-        } catch (e) {
-            console.error("Modo Offline (Error Init):", e);
-            updateStatus(false);
-            document.getElementById('loader').classList.add('hidden'); // Ocultar loader aunque falle
-        }
-
-        function updateStatus(isCloud) {
-            const dot = document.getElementById('status-dot');
-            const txt = document.getElementById('status-text'); // Fixed ID usage in HTML
-            // Note: HTML uses 'status-text' but sidebar HTML actually has it? Wait, let me check the sidebar HTML above.
-            // Sidebar HTML has: <span class="font-bold text-slate-300">Conectado</span> inside a div, but no ID on span in provided V6.1.
-            // Correcting selector strategy:
-            // Actually, in this v7.0 HTML I added IDs connection-dot and connection-text in sidebar.
-            // But let's verify if I named them correctly in HTML block above.
-            // Sidebar block above: id="status-dot", span has no ID but class text-slate-300. 
-            // Let's target parent div and update content safely.
-            const statusContainer = document.querySelector('.bg-black\\/20 .flex'); // Target footer status container
-            if(statusContainer) {
-                if (isCloud) {
-                    statusContainer.innerHTML = `<div class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div><span class="font-bold text-green-400">Nube Activa</span>`;
-                } else {
-                    statusContainer.innerHTML = `<div class="w-2.5 h-2.5 rounded-full bg-orange-500"></div><span class="font-bold text-orange-400">Modo Local</span>`;
+        // --- UI RENDERERS ---
+        const UI = {
+            renderPosSelects: () => {
+                const sSel = document.getElementById('pos-seller');
+                const pSel = document.getElementById('pos-product');
+                sSel.innerHTML = DB.sellers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                pSel.innerHTML = '<option value="">Seleccione...</option>' + DB.products.map((p,i) => `<option value="${i}">${p.name}</option>`).join('');
+                document.getElementById('pos-id').innerText = '#' + Math.floor(Math.random()*10000);
+            },
+            
+            updatePosCalc: () => {
+                const idx = document.getElementById('pos-product').value;
+                if(idx==="") { 
+                   document.getElementById('pos-cost').value='0.00'; document.getElementById('pos-price').value='0.00'; document.getElementById('pos-profit').innerText='0.00'; return; 
                 }
-            }
-            refreshUI();
-        }
-
-        // --- SISTEMA DUAL: NUBE O LOCAL ---
-        async function saveData(col, data) {
-            // Guardar Local Primero
-            if(col==='kgb_sales') STATE.sales.unshift({...data, id: 'temp_'+Date.now()}); 
-            else if(col==='kgb_sellers') STATE.sellers.push({...data, id: 'temp_'+Date.now()});
-            else if(col==='kgb_products') STATE.products.push({...data, id: 'temp_'+Date.now()});
-            else if(col==='kgb_config') STATE.config = data;
+                const p = DB.products[idx];
+                document.getElementById('pos-cost').value = p.cost.toFixed(2);
+                let v = parseFloat(document.getElementById('pos-price').value);
+                if(v===0 || isNaN(v)) { v=p.price; document.getElementById('pos-price').value=v.toFixed(2); }
+                UI.reCalcProfitOnly();
+            },
             
-            saveLocal();
-            refreshUI();
+            reCalcProfitOnly: () => {
+                const c = parseFloat(document.getElementById('pos-cost').value)||0;
+                const p = parseFloat(document.getElementById('pos-price').value)||0;
+                document.getElementById('pos-profit').innerText = (p-c).toFixed(2);
+            },
 
-            // Cloud Sync
-            if(db) {
+            renderConfig: () => {
+                document.getElementById('config-seller-list').innerHTML = DB.sellers.map(s => `
+                    <li class="flex justify-between items-center p-3 bg-slate-50 border rounded-lg text-sm">
+                        <div><span class="font-bold block">${s.name}</span><span class="text-xs text-slate-400">${s.phone}</span></div>
+                        <button onclick="DATA.deleteItem('seller','${s.id}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button>
+                    </li>
+                `).join('');
+                
+                document.getElementById('config-prod-list').innerHTML = DB.products.map(p => `
+                    <tr class="border-b"><td class="p-3 font-bold">${p.name}</td><td class="p-3 text-center">${p.cost}</td><td class="p-3 text-center font-bold text-indigo-600">${p.price}</td><td class="p-3 text-right"><button onclick="DATA.deleteItem('prod','${p.id}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>
+                `).join('');
+
+                document.getElementById('range-admin').value = DB.config.adminPct * 100;
+                document.getElementById('range-seller').value = DB.config.sellerPct * 100;
+                UI.updateConfigRange('admin');
+            },
+            
+            updateConfigRange: (s) => { 
+                const v=parseInt(document.getElementById('range-'+s).value); 
+                document.getElementById(s==='admin'?'range-seller':'range-admin').value=100-v; 
+            },
+            
+            cancelEdit: (t) => { /* Simple mode, direct edits */ },
+            
+            renderHistoryTable: () => {
+                const sEl = document.getElementById('filter-seller');
+                if(sEl.options.length <= 1) sEl.innerHTML = '<option value="">Todos</option>' + DB.sellers.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+
+                const start = document.getElementById('filter-start').value;
+                const end = document.getElementById('filter-end').value;
+                const sel = document.getElementById('filter-seller').value;
+                
+                let d = DB.sales;
+                if(start) d = d.filter(x => x.date.split('T')[0] >= start);
+                if(end) d = d.filter(x => x.date.split('T')[0] <= end);
+                if(sel) d = d.filter(x => x.seller === sel);
+
+                let tc=0, ts=0, rc=0;
+                d.forEach(x => { if(x.status !== 'REFUNDED') { tc+=Number(x.comm); ts+=Number(x.price); } else { rc++; } });
+                document.getElementById('liq-comm').innerText = 'S/ '+tc.toFixed(2);
+                document.getElementById('liq-total').innerText = 'S/ '+ts.toFixed(2);
+                document.getElementById('liq-count').innerText = d.length - rc;
+                document.getElementById('liq-refunds').innerText = rc;
+
+                document.getElementById('history-body').innerHTML = d.sort((a,b) => new Date(b.date) - new Date(a.date)).map(s => {
+                    const isR = s.status === 'REFUNDED';
+                    const vText = `🎫 KGB REGISTRO\n----------------\n📅 ${new Date(s.date).toLocaleDateString()}\n👤 ${s.seller}\n📺 ${s.product}\n💰 COMISIÓN: S/ ${Number(s.comm).toFixed(2)}\n✅ Verificado`;
+                    const safeV = JSON.stringify(vText).replace(/"/g, '&quot;');
+                    const cleanP = s.phone ? String(s.phone).replace(/\s/g,'') : '';
+                    
+                    return `<tr class="border-b hover:bg-slate-50 ${isR?'refunded-row':''} transition">
+                        <td class="px-4 py-3"><div class="font-black text-xs uppercase text-indigo-900">${s.product}</div><div class="text-[10px] text-slate-500">${new Date(s.date).toLocaleDateString()} - ${s.seller}</div></td>
+                        <td class="px-4 py-3"><div class="font-bold text-xs text-slate-700">${s.client||'-'}</div></td>
+                        <td class="px-4 py-3 text-right font-black text-sm text-emerald-600">${isR?'0.00':'S/ '+Number(s.comm).toFixed(2)}</td>
+                        <td class="px-4 py-3 text-center"><div class="flex justify-center gap-2">${isR?'<span class="text-[9px] font-bold text-red-600 bg-red-100 px-2 py-1 rounded">DEV</span>':`<button onclick="DATA.refundSale('${s.id}')" class="text-red-400 border rounded w-8 h-8 hover:bg-red-50"><i class="fa-solid fa-rotate-left"></i></button><button onclick='UI.copyV("${safeV}")' class="text-blue-500 border rounded w-8 h-8 hover:bg-blue-50"><i class="fa-regular fa-copy"></i></button><button onclick="window.open('https://wa.me/${cleanP}?text=${encodeURIComponent(vText)}','_blank')" class="text-green-500 border rounded w-8 h-8 hover:bg-green-50"><i class="fa-brands fa-whatsapp"></i></button>`}</div></td>
+                    </tr>`;
+                }).join('');
+            },
+
+            updateDashboard: () => {
+                let t=0, a=0, s=0, c=0, ss={};
+                DB.sales.forEach(x => {
+                    if(x.status !== 'REFUNDED') {
+                        t+=Number(x.price); a+=Number(x.admin); s+=Number(x.comm); c++;
+                        if(!ss[x.seller]) ss[x.seller]=0; ss[x.seller]+=Number(x.comm);
+                    }
+                });
+                document.getElementById('dash-total').innerText=t.toFixed(2);
+                document.getElementById('dash-admin').innerText=a.toFixed(2);
+                document.getElementById('dash-seller').innerText=s.toFixed(2);
+                document.getElementById('dash-count').innerText=c;
+                
+                const ctx = document.getElementById('chartSellers').getContext('2d');
+                if(window.myChart) window.myChart.destroy();
+                window.myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(ss),
+                        datasets: [{label: 'Comisión', data: Object.values(ss), backgroundColor: '#4f46e5', borderRadius: 6}]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            },
+            
+            copyV: (t) => { const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast("Copiado"); },
+            exportToExcel: () => { const ws=XLSX.utils.json_to_sheet(DB.sales); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Ventas"); XLSX.writeFile(wb,"Reporte_Cloud.xlsx"); }
+        };
+
+        // --- DATA LAYER ---
+        const DATA = {
+            sync: async () => {
+                showSync(true);
                 try {
-                    if(col==='kgb_config') await setDoc(doc(db, "kgb_config", "main"), data);
-                    else await addDoc(collection(db, col), data);
-                    showToast("Guardado en Nube");
-                } catch(e) { showToast("Guardado Localmente"); }
-            } else {
-                showToast("Guardado Local");
-            }
-        }
-        
-        async function updateData(col, id, data) {
-            // Update Local
-            if (col==='kgb_sellers') { const i=STATE.sellers.findIndex(x=>x.id==id); if(i>-1) Object.assign(STATE.sellers[i], data); }
-            if (col==='kgb_products') { const i=STATE.products.findIndex(x=>x.id==id); if(i>-1) Object.assign(STATE.products[i], data); }
-            if (col==='kgb_sales') { const i=STATE.sales.findIndex(x=>x.id==id); if(i>-1) Object.assign(STATE.sales[i], data); }
-            saveLocal();
-            refreshUI();
-
-            // Update Cloud
-            if(db && !String(id).startsWith('temp_')) {
-                try { await updateDoc(doc(db, col, id), data); } catch(e){}
-            }
-        }
-
-        function saveLocal() { localStorage.setItem('kgb_local_db_v8', JSON.stringify(STATE)); }
-
-        function setupCloudListeners() {
-            onSnapshot(collection(db, "kgb_sellers"), s => { STATE.sellers=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.active); saveLocal(); refreshUI(); });
-            onSnapshot(collection(db, "kgb_products"), s => { STATE.products=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.active); saveLocal(); refreshUI(); });
-            onSnapshot(query(collection(db, "kgb_sales"), orderBy("date", "desc")), s => { STATE.sales=s.docs.map(d=>({id:d.id,...d.data()})); saveLocal(); if(window.renderHistoryTable) window.renderHistoryTable(); });
-            onSnapshot(doc(db, "kgb_config", "main"), s => { if(s.exists()) { STATE.config=s.data(); saveLocal(); updateConfigInputs(); } });
-        }
-
-        // --- LOGIC: POS ---
-        window.updatePosCalc = () => {
-            const idx = document.getElementById('pos-product').value;
-            if(idx === "" || !STATE.products[idx]) { document.getElementById('pos-cost').value='0.00'; document.getElementById('pos-price').value='0.00'; document.getElementById('pos-profit').innerText='0.00'; return; }
-            const p = STATE.products[idx]; document.getElementById('pos-cost').value = p.cost.toFixed(2);
-            let curr = parseFloat(document.getElementById('pos-price').value); if(curr===0 || isNaN(curr)) { curr = p.price; document.getElementById('pos-price').value=curr.toFixed(2); }
-            reCalcProfitOnly();
-        }
-        window.reCalcProfitOnly = () => { const c=parseFloat(document.getElementById('pos-cost').value)||0; const p=parseFloat(document.getElementById('pos-price').value)||0; document.getElementById('pos-profit').innerText=(p-c).toFixed(2); };
-
-        document.getElementById('btn-submit').onclick = async () => {
-            const idx = document.getElementById('pos-product').value; const sId = document.getElementById('pos-seller').value; if(idx==="" || sId==="") return alert("Faltan datos");
-            const p = STATE.products[idx]; 
-            const s = STATE.sellers.find(x => x.id == sId) || STATE.sellers[sId];
-
-            const price = parseFloat(document.getElementById('pos-price').value); const prof = price - p.cost;
-            const sale = {
-                date: new Date().toISOString(), seller: s.name, sellerPhone: s.phone, product: p.name, 
-                cost: p.cost, price: price, profit: prof, admin: prof*STATE.config.adminPct, 
-                comm: prof*STATE.config.sellerPct, client: document.getElementById('pos-client').value, 
-                phone: document.getElementById('pos-phone').value, status: 'active'
-            };
-            await saveData('kgb_sales', sale);
-            document.getElementById('pos-client').value=''; document.getElementById('pos-phone').value='';
-        };
-
-        // --- ACTIONS ---
-        document.getElementById('btn-seller-action').onclick = async () => {
-            const id = document.getElementById('edit-seller-id').value; const name = document.getElementById('new-seller-name').value; const phone = document.getElementById('new-seller-phone').value; if(!name) return;
-            if(id) { await updateData('kgb_sellers', id, {name, phone}); showToast("Actualizado"); cancelEdit('seller'); } 
-            else { await saveData('kgb_sellers', { name, phone, active: true }); showToast("Creado"); }
-            document.getElementById('new-seller-name').value=''; document.getElementById('new-seller-phone').value='';
-        };
-        document.getElementById('btn-prod-action').onclick = async () => {
-            const id = document.getElementById('edit-prod-id').value; const name = document.getElementById('new-prod-name').value; const cost = parseFloat(document.getElementById('new-prod-cost').value); const price = parseFloat(document.getElementById('new-prod-price').value); if(!name) return;
-            if(id) { await updateData('kgb_products', id, {name, cost, price}); showToast("Actualizado"); cancelEdit('prod'); } 
-            else { await saveData('kgb_products', { name, cost, price, active: true }); showToast("Creado"); }
-            document.getElementById('new-prod-name').value='';
-        };
-        document.getElementById('btn-save-config').onclick = async () => { await saveData('kgb_config', { adminPct: document.getElementById('range-admin').value / 100, sellerPct: document.getElementById('range-seller').value / 100 }); };
-
-        window.deleteItem = async (c, id) => { if(confirm("¿Eliminar?")) await updateData(c, id, { active: false }); };
-        window.refundSale = async (id) => { if(confirm("¿Anular?")) await updateData('kgb_sales', id, { status: 'REFUNDED' }); };
-
-        window.prepareEdit = (t, id) => {
-            if(t==='seller') { const s = STATE.sellers.find(x=>x.id===id); document.getElementById('edit-seller-id').value=id; document.getElementById('new-seller-name').value=s.name; document.getElementById('new-seller-phone').value=s.phone; document.getElementById('seller-mode-badge').innerText="EDITANDO"; document.getElementById('btn-seller-action').innerText="Actualizar"; document.getElementById('btn-seller-action').classList.replace('bg-slate-800', 'bg-blue-600'); document.getElementById('btn-seller-cancel').classList.remove('hidden'); }
-            else { const p = STATE.products.find(x=>x.id===id); document.getElementById('edit-prod-id').value=id; document.getElementById('new-prod-name').value=p.name; document.getElementById('new-prod-cost').value=p.cost; document.getElementById('new-prod-price').value=p.price; document.getElementById('prod-mode-badge').innerText="EDITANDO"; document.getElementById('btn-prod-action').innerText="Actualizar"; document.getElementById('btn-prod-action').classList.replace('bg-indigo-600', 'bg-blue-600'); document.getElementById('btn-prod-cancel').classList.remove('hidden'); }
-        };
-        window.cancelEdit = (t) => { 
-            document.getElementById(t==='seller'?'edit-seller-id':'edit-prod-id').value=''; document.getElementById(t==='seller'?'new-seller-name':'new-prod-name').value=''; 
-            document.getElementById(`${t}-mode-badge`).innerText="CREAR"; document.getElementById(`btn-${t}-action`).innerText=t==='prod'?'Agregar':'Crear'; document.getElementById(`btn-${t}-cancel`).classList.add('hidden');
-            if(t==='seller') document.getElementById('btn-seller-action').classList.replace('bg-blue-600', 'bg-slate-800');
-            else document.getElementById('btn-prod-action').classList.replace('bg-blue-600', 'bg-indigo-600');
-        };
-
-        // Renders
-        function renderPosSelects() { const sel = document.getElementById('pos-seller'); const pro = document.getElementById('pos-product'); sel.innerHTML = STATE.sellers.map((s,i) => `<option value="${s.id}">${s.name}</option>`).join(''); pro.innerHTML = '<option value="">Seleccione...</option>' + STATE.products.map((p, i) => `<option value="${i}">${p.name}</option>`).join(''); }
-        function renderSellerList() { document.getElementById('config-seller-list').innerHTML = STATE.sellers.map(s => `<li class="flex justify-between items-center p-3 bg-slate-50 border rounded-lg text-sm"><div><span class="font-bold block">${s.name}</span><span class="text-xs text-slate-400">${s.phone}</span></div><div class="flex gap-2"><button onclick="prepareEdit('seller','${s.id}')" class="text-blue-500 border p-1 rounded hover:bg-blue-50"><i class="fa-solid fa-pen"></i></button><button onclick="deleteItem('kgb_sellers','${s.id}')" class="text-red-500 border p-1 rounded hover:bg-red-50"><i class="fa-solid fa-trash"></i></button></div></li>`).join(''); }
-        function renderProductList() { document.getElementById('config-prod-list').innerHTML = STATE.products.map(p => `<tr class="border-b"><td class="p-3 font-bold">${p.name}</td><td class="p-3 text-center">${p.cost}</td><td class="p-3 text-center font-bold text-indigo-600">${p.price}</td><td class="p-3 text-right"><button onclick="prepareEdit('prod','${p.id}')" class="text-blue-500 border p-1 rounded hover:bg-blue-50 mr-2"><i class="fa-solid fa-pen"></i></button><button onclick="deleteItem('kgb_products','${p.id}')" class="text-red-500 border p-1 rounded hover:bg-red-50"><i class="fa-solid fa-trash"></i></button></td></tr>`).join(''); }
-        function updateConfigInputs() { document.getElementById('range-admin').value = STATE.config.adminPct * 100; document.getElementById('range-seller').value = STATE.config.sellerPct * 100; }
-        
-        window.renderHistoryTable = () => {
-            const start = document.getElementById('filter-start').value; const end = document.getElementById('filter-end').value; const sId = document.getElementById('filter-seller').value;
-            let d = STATE.sales; if(start) d = d.filter(x => x.date.split('T')[0] >= start); if(end) d = d.filter(x => x.date.split('T')[0] <= end);
-            if(sId) { const sName = STATE.sellers.find(x => x.id === sId)?.name; if(sName) d = d.filter(x => x.seller === sName); }
+                    const res = await fetch(API_URL);
+                    const json = await res.json();
+                    if(json.status === "success") {
+                        DB.sellers = json.data.sellers || [];
+                        DB.products = json.data.products || [];
+                        DB.sales = json.data.sales.map(r => ({
+                            id: r.id, date: r.date, seller: r.seller, product: r.product, client: r.client, 
+                            phone: r.phone, cost: r.cost, price: r.price, comm: r.comm, admin: r.admin, status: r.status
+                        }));
+                        if(json.data.config) DB.config = {adminPct: json.data.config.adminPct, sellerPct: json.data.config.sellerPct};
+                        
+                        localStorage.setItem('kgb_v11_db', JSON.stringify(DB));
+                        UI.updateStatus(true);
+                        refreshUI();
+                    }
+                } catch(e) { console.error(e); UI.updateStatus(false); }
+                finally { showSync(false); }
+            },
             
-            let tc=0, ts=0, rc=0; d.forEach(x => { if(x.status !== 'REFUNDED') { tc += x.comm; ts += x.price; } else { rc++; } });
-            document.getElementById('liq-comm').innerText = 'S/ ' + tc.toFixed(2); document.getElementById('liq-total').innerText = 'S/ ' + ts.toFixed(2); document.getElementById('liq-count').innerText = d.length - rc; document.getElementById('liq-refunds').innerText = rc;
+            post: async (payload) => {
+                showSync(true);
+                // 1. Guardar local
+                if(payload.action === 'sale') DB.sales.unshift({...payload, id: 'temp_'+Date.now()});
+                if(payload.action === 'add_seller') DB.sellers.push(payload);
+                if(payload.action === 'add_product') DB.products.push(payload);
+                localStorage.setItem('kgb_v11_db', JSON.stringify(DB));
+                refreshUI();
+                
+                // 2. Enviar nube
+                try {
+                    await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                    showToast("Sincronizado");
+                    setTimeout(DATA.sync, 1000);
+                } catch(e) { showToast("Guardado Local"); UI.updateStatus(false); }
+                finally { showSync(false); }
+            },
 
-            document.getElementById('history-table-body').innerHTML = d.map(s => {
-                const isR = s.status === 'REFUNDED';
-                const vText = `🎫 KGB REGISTRO\n----------------\n📅 ${new Date(s.date).toLocaleDateString()}\n👤 ${s.seller}\n📺 ${s.product}\n💰 COMISIÓN: S/ ${Number(s.comm).toFixed(2)}\n✅ Verificado`;
-                const safeV=JSON.stringify(vText).replace(/"/g,'&quot;'); const cleanP = s.sellerPhone ? String(s.sellerPhone).replace(/\s/g, '') : '';
-                return `<tr class="border-b hover:bg-slate-50 ${isR?'refunded-row':''} transition"><td class="px-4 py-3"><div class="font-black text-xs uppercase text-indigo-900">${s.product}</div><div class="text-[10px] text-slate-500">${new Date(s.date).toLocaleDateString()} - ${s.seller}</div></td><td class="px-4 py-3"><div class="font-bold text-xs text-slate-700">${s.client||'-'}</div></td><td class="px-4 py-3 text-right font-black text-sm text-emerald-600">${isR?'0.00':'S/ '+Number(s.comm).toFixed(2)}</td><td class="px-4 py-3 text-center"><div class="flex justify-center gap-2">${isR?'<span class="text-[9px] font-bold text-red-600 bg-red-100 px-2 py-1 rounded">DEV</span>':`<button onclick="refundSale('${s.id}')" class="text-red-400 border rounded w-8 h-8 hover:bg-red-50"><i class="fa-solid fa-rotate-left"></i></button><button onclick='copyV("${safeV}")' class="text-blue-500 border rounded w-8 h-8 hover:bg-blue-50"><i class="fa-regular fa-copy"></i></button><button onclick="window.open('https://wa.me/${cleanP}?text=${encodeURIComponent(vText)}','_blank')" class="text-green-500 border rounded w-8 h-8 hover:bg-green-50"><i class="fa-brands fa-whatsapp"></i></button>`}</div></td></tr>`;
-            }).join('');
+            // Acciones
+            submitSale: () => {
+                const idx = document.getElementById('pos-product').value;
+                const sId = document.getElementById('pos-seller').value;
+                if(idx==="" || !sId) return alert("Faltan datos");
+                
+                const p = DB.products[idx];
+                const s = DB.sellers.find(x => x.id == sId);
+                const price = parseFloat(document.getElementById('pos-price').value);
+                const prof = price - p.cost;
+
+                DATA.post({
+                    action: 'sale', id: Date.now().toString(), date: new Date().toISOString(),
+                    seller: s.name, product: p.name, client: document.getElementById('pos-client').value,
+                    phone: document.getElementById('pos-phone').value, cost: p.cost, price: price, profit: prof,
+                    admin: prof * DB.config.adminPct, comm: prof * DB.config.sellerPct
+                });
+                document.getElementById('pos-client').value='';
+                document.getElementById('pos-phone').value='';
+            },
+            addSeller: () => {
+                const n = document.getElementById('new-seller-name').value;
+                const ph = document.getElementById('new-seller-phone').value;
+                if(n) DATA.post({ action: 'add_seller', id: Date.now().toString(), name: n, phone: ph });
+                document.getElementById('new-seller-name').value='';
+            },
+            addProd: () => {
+                const n = document.getElementById('new-prod-name').value;
+                const c = parseFloat(document.getElementById('new-prod-cost').value);
+                const p = parseFloat(document.getElementById('new-prod-price').value);
+                if(n) DATA.post({ action: 'add_product', id: Date.now().toString(), name: n, cost: c, price: p });
+                document.getElementById('new-prod-name').value='';
+            },
+            deleteItem: (type, id) => {
+                if(!confirm("¿Eliminar?")) return;
+                DATA.post({ action: type==='seller'?'delete_seller':'delete_product', id: id });
+                if(type==='seller') DB.sellers = DB.sellers.filter(x=>x.id != id);
+                else DB.products = DB.products.filter(x=>x.id != id);
+                localStorage.setItem('kgb_v11_db', JSON.stringify(DB));
+                UI.renderConfig();
+            },
+            refundSale: (id) => {
+                if(!confirm("¿Anular?")) return;
+                DATA.post({ action: 'refund', id: id });
+                const s = DB.sales.find(x=>x.id == id);
+                if(s) s.status = 'REFUNDED';
+                localStorage.setItem('kgb_v11_db', JSON.stringify(DB));
+                UI.renderHistoryTable();
+            },
+            saveConfig: () => {
+                const a = document.getElementById('range-admin').value / 100;
+                const s = document.getElementById('range-seller').value / 100;
+                DATA.post({ action: 'update_config', admin: a, seller: s });
+            },
+            forceSync: () => { DATA.sync(); }
         };
-        window.copyV = (t) => { const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast("Copiado"); };
-        function renderFilterSeller() { const sel = document.getElementById('filter-seller'); sel.innerHTML = '<option value="">Todos</option>' + STATE.sellers.map(s => `<option value="${s.id}">${s.name}</option>`).join(''); }
-        
-        window.updateDashboard = () => {
-            let t=0,a=0,s=0,c=0; STATE.sales.forEach(x=>{if(x.status!=='REFUNDED'){t+=Number(x.price);a+=Number(x.admin);s+=Number(x.comm);c++;}});
-            document.getElementById('dash-total').innerText=t.toFixed(2);document.getElementById('dash-admin').innerText=a.toFixed(2);document.getElementById('dash-seller').innerText=s.toFixed(2);document.getElementById('dash-count').innerText=c;
-        };
-        window.exportToExcel = () => { const ws=XLSX.utils.json_to_sheet(STATE.sales); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Ventas"); XLSX.writeFile(wb,"Reporte_Cloud.xlsx"); };
 
-        document.getElementById('range-admin').oninput = function() { const v = parseInt(this.value); document.getElementById('range-seller').value = 100 - v; };
+        function refreshUI() { UI.renderPosSelects(); UI.renderConfig(); UI.updatePosCalc(); }
 
-        // INIT LOAD
+        UI.updateStatus = (isCloud) => {
+            const dot = document.getElementById('status-dot');
+            const txt = document.getElementById('status-text');
+            if(isCloud) { dot.classList.replace('bg-orange-500', 'bg-green-500'); txt.innerText = "Nube OK"; }
+            else { dot.classList.replace('bg-green-500', 'bg-orange-500'); txt.innerText = "Local"; }
+        }
+
+        // Init
+        setInterval(() => { const d = new Date(); document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}); }, 1000);
+        DATA.sync();
         refreshUI();
+
+        // Exponer UI para HTML
+        window.UI = UI;
+        window.DATA = DATA;
+        window.toggleMobileMenu = toggleMobileMenu;
+        window.switchTab = switchTab;
+
     </script>
 </body>
 </html>
