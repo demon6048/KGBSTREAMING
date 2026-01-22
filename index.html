@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KGB STREAMING v13.0 | Fix</title>
+    <title>KGB STREAMING v13.5</title>
+    
     <!-- LIBRERÍAS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,9 +17,11 @@
         .nav-item.active { background-color: #4338ca; color: white; border-left: 4px solid #a5b4fc; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); }
         .refunded-row { background-color: #fee2e2 !important; color: #991b1b !important; text-decoration: line-through; opacity: 0.7; }
         
-        /* Transiciones */
+        /* Sidebar y Transiciones */
         #sidebar { transition: transform 0.3s ease-in-out; }
         #mobile-overlay { transition: opacity 0.3s ease-in-out; }
+        
+        /* Loader discreto */
         #sync-indicator { transition: opacity 0.5s; pointer-events: none; opacity: 0; }
         #sync-indicator.active { opacity: 1; }
 
@@ -29,18 +32,18 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-800 bg-slate-50">
 
-    <!-- Notificación Flotante -->
+    <!-- NOTIFICACIÓN FLOTANTE -->
     <div id="sync-indicator" class="fixed top-4 right-4 z-[100] bg-white text-indigo-800 text-xs px-4 py-2 rounded-full shadow-xl border border-indigo-100 flex items-center gap-2 font-bold transform translate-y-0">
         <i class="fa-solid fa-cloud-arrow-up animate-bounce"></i> Guardando...
     </div>
 
-    <!-- Overlay Móvil -->
+    <!-- OVERLAY MÓVIL -->
     <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden backdrop-blur-sm"></div>
 
     <!-- SIDEBAR -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col z-50 shadow-2xl border-r border-slate-800 transform -translate-x-full md:translate-x-0 h-full transition-transform duration-300">
         
-        <!-- Header Móvil -->
+        <!-- Mobile Close Header -->
         <div class="flex justify-between items-center p-4 md:hidden border-b border-slate-800 bg-slate-950">
             <span class="font-bold text-white text-xs uppercase tracking-widest">Menú</span>
             <button onclick="toggleMobileMenu()" class="text-white hover:text-red-400 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
@@ -54,7 +57,7 @@
             </div>
         </div>
 
-        <!-- Navegación -->
+        <!-- NAVEGACIÓN -->
         <div class="flex-1 overflow-y-auto px-4 py-6 space-y-3">
             <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">Operaciones</div>
             
@@ -95,7 +98,7 @@
             </button>
             <div>
                 <h1 class="text-lg md:text-xl font-black text-slate-900 tracking-tight leading-none">KGB <span class="text-indigo-600">STREAMING</span></h1>
-                <p class="text-[9px] text-slate-400 font-bold hidden sm:block">Control v13.0</p>
+                <p class="text-[9px] text-slate-400 font-bold hidden sm:block">Panel de Control v13.5</p>
             </div>
         </div>
         
@@ -126,7 +129,7 @@
                                 <div class="border-x border-slate-700"><p class="text-[9px] text-indigo-400 font-bold uppercase mb-1">VENTA</p><input id="pos-price" type="number" oninput="UI.reCalcProfitOnly()" class="w-full bg-transparent text-center font-mono text-2xl font-bold text-white outline-none focus:text-indigo-400 transition" value="0.00"></div>
                                 <div><p class="text-[9px] text-emerald-400 font-bold uppercase mb-1">GANANCIA</p><p id="pos-profit" class="font-mono text-xl font-bold text-emerald-400 mt-1">0.00</p></div>
                             </div>
-                            <!-- DESGLOSE VISUAL AÑADIDO -->
+                            <!-- Desglose Visual -->
                             <div class="mt-4 pt-4 border-t border-slate-700 flex justify-center gap-6 text-[10px] uppercase font-bold text-slate-400 relative z-10">
                                 <span>Admin: <span id="view-admin" class="text-indigo-400">0.00</span></span>
                                 <span>Vend: <span id="view-seller" class="text-emerald-400">0.00</span></span>
@@ -179,9 +182,7 @@
                 <div class="flex flex-col gap-6">
                     <!-- Plataformas -->
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                        <h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2 flex justify-between">
-                            <span>1. Plataformas</span> <span id="prod-mode-badge" class="text-[9px] bg-slate-100 px-2 py-0.5 rounded text-slate-400 font-bold">CREAR</span>
-                        </h3>
+                        <h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2">Plataformas</h3>
                         <div class="bg-indigo-50 p-4 rounded-xl mb-4 border border-indigo-100 flex flex-col md:flex-row gap-2">
                             <input type="hidden" id="edit-prod-id">
                             <input type="text" id="new-prod-name" placeholder="Nombre" class="flex-grow border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
@@ -196,9 +197,7 @@
                     </div>
                     <!-- Vendedores -->
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                        <h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2 flex justify-between">
-                            <span>2. Vendedores</span> <span id="seller-mode-badge" class="text-[9px] bg-slate-100 px-2 py-0.5 rounded text-slate-400 font-bold">CREAR</span>
-                        </h3>
+                        <h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2">Vendedores</h3>
                         <div class="bg-slate-50 p-4 rounded-xl mb-4 border border-slate-100 flex flex-col md:flex-row gap-2">
                             <input type="hidden" id="edit-seller-id">
                             <input type="text" id="new-seller-name" placeholder="Nombre" class="flex-grow border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400">
@@ -226,7 +225,7 @@
         // ==========================================
         //  TU URL DE GOOGLE APPS SCRIPT
         // ==========================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbyRxtBowlGzcSuJyVSwAS1IVczW6uqqtQ86gHRHtt_6ivytiYOPkrPnecC6bGEPGYot4w/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwk_JajmG_hS76ZTIuZX5COoNmUU301cqLtkJ_s_hWhe_W1yYkD1-b_8w3P9386jBNWQw/exec";
         
         // ESTADO GLOBAL
         const DEFAULT_DB = { sellers: [], products: [], sales: [], config: { adminPct: 0.60, sellerPct: 0.40 } };
@@ -258,8 +257,16 @@
             renderPosSelects: () => {
                 const sSel = document.getElementById('pos-seller');
                 const pSel = document.getElementById('pos-product');
+                // Guardar valor actual
+                const currP = pSel.value; const currS = sSel.value;
+
                 sSel.innerHTML = DB.sellers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
                 pSel.innerHTML = '<option value="">Seleccione...</option>' + DB.products.map((p,i) => `<option value="${i}">${p.name}</option>`).join('');
+                
+                // Restaurar valor si es posible
+                if(currS) sSel.value = currS;
+                if(currP && DB.products[currP]) pSel.value = currP;
+                
                 document.getElementById('pos-id').innerText = '#' + Math.floor(Math.random()*10000);
             },
             updatePosCalc: () => {
@@ -271,7 +278,7 @@
                 document.getElementById('pos-cost').value = p.cost.toFixed(2);
                 
                 // --- CORRECCIÓN: Actualizar precio siempre al cambiar producto ---
-                let v = parseFloat(p.price); // Tomar precio del producto directamente
+                let v = parseFloat(p.price); // Forzar precio de la plataforma
                 document.getElementById('pos-price').value = v.toFixed(2);
                 
                 UI.reCalcProfitOnly();
@@ -281,8 +288,7 @@
                 const p = parseFloat(document.getElementById('pos-price').value)||0;
                 const profit = p - c;
                 document.getElementById('pos-profit').innerText = profit.toFixed(2);
-                
-                // Actualizar Desglose Visual
+                // Visual desglose
                 document.getElementById('view-admin').innerText = (profit * DB.config.adminPct).toFixed(2);
                 document.getElementById('view-seller').innerText = (profit * DB.config.sellerPct).toFixed(2);
             },
@@ -296,8 +302,14 @@
             updateConfigRange: (s) => { const v=parseInt(document.getElementById('range-'+s).value); document.getElementById(s==='admin'?'range-seller':'range-admin').value=100-v; },
             renderHistoryTable: () => {
                 const sEl = document.getElementById('filter-seller');
+                const currFilter = sEl.value;
                 if(sEl.options.length <= 1) sEl.innerHTML = '<option value="">Todos</option>' + DB.sellers.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
-                const start = document.getElementById('filter-start').value, end = document.getElementById('filter-end').value, sel = document.getElementById('filter-seller').value;
+                sEl.value = currFilter;
+
+                const start = document.getElementById('filter-start').value;
+                const end = document.getElementById('filter-end').value;
+                const sel = document.getElementById('filter-seller').value;
+                
                 let d = DB.sales;
                 if(start) d = d.filter(x => x.date.split('T')[0] >= start);
                 if(end) d = d.filter(x => x.date.split('T')[0] <= end);
@@ -323,17 +335,8 @@
                 document.getElementById('dash-admin').innerText=a.toFixed(2);
                 document.getElementById('dash-seller').innerText=s.toFixed(2);
                 document.getElementById('dash-count').innerText=c;
-                
-                const ctx = document.getElementById('chartSellers').getContext('2d');
-                if(window.myChart) window.myChart.destroy();
-                window.myChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(ss),
-                        datasets: [{label: 'Comisión', data: Object.values(ss), backgroundColor: '#4f46e5', borderRadius: 6}]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-                });
+                const ctx = document.getElementById('chartSellers').getContext('2d'); if(window.myChart) window.myChart.destroy();
+                window.myChart = new Chart(ctx, { type: 'bar', data: { labels: Object.keys(ss), datasets: [{label: 'Comisión', data: Object.values(ss), backgroundColor: '#4f46e5', borderRadius: 6}] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
             },
             copyV: (t) => { const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast("Copiado"); },
             exportToExcel: () => { const ws=XLSX.utils.json_to_sheet(DB.sales); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Ventas"); XLSX.writeFile(wb,"Reporte_Cloud.xlsx"); },
@@ -343,6 +346,7 @@
         // DATA LAYER
         const DATA = {
             sync: async () => {
+                if(API_URL.includes("PEGAR_AQUI")) { updateStatus(false); return; }
                 showSync(true);
                 try {
                     const res = await fetch(API_URL);
@@ -354,7 +358,7 @@
                         if(json.data.config) DB.config = json.data.config;
                         localStorage.setItem('kgb_v13_db', JSON.stringify(DB));
                         updateStatus(true);
-                        // Refresh Current UI
+                        // Refresh Current UI without breaking tab
                         const activeView = document.querySelector('.view-section:not(.hidden)').id.replace('view-','');
                         if(activeView === 'pos') UI.renderPosSelects();
                         else UI.switchTab(activeView);
@@ -362,15 +366,17 @@
                 } catch(e) { console.error("Sync Error", e); updateStatus(false); }
                 finally { showSync(false); }
             },
-            
             post: async (payload) => {
                 showSync(true);
+                // Optimistic Local
                 if(payload.action === 'sale') DB.sales.unshift({...payload, id: 'temp_'+Date.now()});
                 if(payload.action === 'add_seller') DB.sellers.push(payload);
                 if(payload.action === 'add_product') DB.products.push(payload);
                 localStorage.setItem('kgb_v13_db', JSON.stringify(DB));
-                UI.switchTab('pos'); // Reset UI
                 
+                // NO FORZAR CAMBIO DE TAB, SOLO REFRESCAR UI
+                if(payload.action === 'add_seller' || payload.action === 'add_product') UI.renderConfig();
+
                 try {
                     await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain" } });
                     showToast("Sincronizado");
@@ -378,8 +384,6 @@
                 } catch(e) { showToast("Guardado Local"); updateStatus(false); }
                 finally { showSync(false); }
             },
-
-            // Acciones
             submitSale: () => {
                 const idx = document.getElementById('pos-product').value; const sId = document.getElementById('pos-seller').value; if(idx==="" || sId==="") return alert("Faltan datos");
                 const p = DB.products[idx]; const s = DB.sellers.find(x => x.id == sId);
