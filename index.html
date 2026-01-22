@@ -588,11 +588,9 @@
                 const p = DB.products[idx];
                 document.getElementById('pos-cost').value = parseMoney(p.cost).toFixed(2);
                 
-                let v = parseFloat(document.getElementById('pos-price').value);
-                if(v===0 || isNaN(v)) { 
-                    v=parseMoney(p.price); 
-                    document.getElementById('pos-price').value=v.toFixed(2); 
-                }
+                // FUERZA LA ACTUALIZACIÓN AUTOMÁTICA DEL PRECIO AL CAMBIAR DE PLATAFORMA
+                document.getElementById('pos-price').value = parseMoney(p.price).toFixed(2);
+                
                 UI.reCalcProfitOnly();
             },
             reCalcProfitOnly: () => {
@@ -886,10 +884,19 @@
 
                 localStorage.setItem('kgb_v21_db', JSON.stringify(DB));
                 
-                // Refresh UI immediately
-                const activeView = document.querySelector('.view-section:not(.hidden)').id.replace('view-','');
-                if(activeView === 'pos') { UI.switchTab('pos'); UI.renderPosSelects(); } // Clear form
-                else UI.switchTab(activeView);
+                // --- CORRECCIÓN DE VISTA ACTIVA PARA EVITAR SALTOS ---
+                let currentView = 'pos';
+                if(!document.getElementById('view-config').classList.contains('hidden')) currentView = 'config';
+                else if(!document.getElementById('view-history').classList.contains('hidden')) currentView = 'history';
+                else if(!document.getElementById('view-dashboard').classList.contains('hidden')) currentView = 'dashboard';
+
+                if(currentView === 'pos' && payload.action === 'sale') {
+                     // Solo limpiamos si estamos en POS y acabamos de hacer una venta
+                    UI.switchTab('pos'); 
+                } else {
+                    // Si estamos en config o cualquier otro lado, solo refrescamos la vista actual
+                    UI.switchTab(currentView);
+                }
 
                 try { 
                     await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain" } }); 
