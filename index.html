@@ -686,7 +686,7 @@
                     let comm = parseMoney(s.comm);
                     if(comm === 0 && profit > 0) comm = profit * (DB.config.sellerPct || 0.40);
 
-                    const vText = `🎫 KGB REGISTRO\n----------------\n📅 ${new Date(s.date).toLocaleDateString()}\n👤 ${s.seller}\n📺 ${s.product}\n💰 COMISIÓN: S/ ${comm.toFixed(2)}\n✅ Verificado`;
+                    const vText = `🔔 KGB STREAMING - REGISTRO\n---------------------------\n🆔 ID Transacción: #${s.id}\n📅 Fecha: ${new Date(s.date).toLocaleDateString()}\n👤 Vendedor: ${s.seller}\n📺 Plataforma: ${s.product}\n💰 TU COMISIÓN: S/ ${comm.toFixed(2)}\n---------------------------\n✅ Su compra ha sido verificada en el sistema.`;
                     const safeV = JSON.stringify(vText).replace(/"/g, '&quot;'); 
                     const cleanP = s.phone ? String(s.phone).replace(/\s/g,'') : '';
                     
