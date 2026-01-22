@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KGB STREAMING v14.0 | Fix</title>
+    <title>KGB STREAMING v14.1</title>
     <!-- LIBRERÍAS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -36,16 +36,22 @@
 
     <!-- SIDEBAR -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col z-50 shadow-2xl border-r border-slate-800 transform -translate-x-full md:translate-x-0 h-full transition-transform duration-300">
+        
+        <!-- Header Móvil -->
         <div class="flex justify-between items-center p-4 md:hidden border-b border-slate-800 bg-slate-950">
             <span class="font-bold text-white text-xs uppercase tracking-widest">Menú</span>
             <button onclick="toggleMobileMenu()" class="text-white hover:text-red-400 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
         </div>
+
+        <!-- Logo -->
         <div class="h-28 flex items-center justify-center border-b border-slate-800 p-4 bg-slate-950 hidden md:flex relative group">
             <div class="text-center">
                 <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg mx-auto mb-2"><i class="fa-solid fa-table"></i></div>
                 <h1 class="text-sm font-black text-white tracking-widest">KGB SHEETS</h1>
             </div>
         </div>
+
+        <!-- Navegación -->
         <div class="flex-1 overflow-y-auto px-4 py-6 space-y-3">
             <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">Operaciones</div>
             <div onclick="UI.switchTab('pos')" id="btn-nav-pos" class="nav-item active cursor-pointer w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition active bg-indigo-700 text-white font-bold shadow-lg"><i class="fa-solid fa-cart-shopping w-5 mr-3"></i> <span>Venta Nueva</span></div>
@@ -54,6 +60,8 @@
             <div onclick="UI.switchTab('dashboard')" id="btn-nav-dashboard" class="nav-item cursor-pointer w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition"><i class="fa-solid fa-chart-pie w-5 mr-3"></i> <span>Reportes</span></div>
             <div onclick="UI.switchTab('config')" id="btn-nav-config" class="nav-item cursor-pointer w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition"><i class="fa-solid fa-sliders w-5 mr-3"></i> <span>Configuración</span></div>
         </div>
+
+        <!-- Footer -->
         <div class="p-5 bg-black/20 border-t border-slate-800 text-center text-xs">
             <div class="flex items-center justify-center gap-2 mb-1"><div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-orange-500"></div><span id="status-text" class="font-bold text-slate-300">Conectando...</span></div>
             <p class="text-indigo-500 font-bold">José Vizcarra</p>
@@ -64,7 +72,7 @@
     <header class="bg-white h-16 border-b border-gray-200 flex items-center justify-between px-4 md:ml-64 z-30 fixed top-0 right-0 left-0 transition-all">
         <div class="flex items-center gap-4">
             <button onclick="toggleMobileMenu()" class="md:hidden text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition focus:outline-none"><i class="fa-solid fa-bars text-xl"></i></button>
-            <div><h1 class="text-lg md:text-xl font-black text-slate-900 tracking-tight leading-none">KGB <span class="text-indigo-600">STREAMING</span></h1><p class="text-[9px] text-slate-400 font-bold hidden sm:block">Control v14.0</p></div>
+            <div><h1 class="text-lg md:text-xl font-black text-slate-900 tracking-tight leading-none">KGB <span class="text-indigo-600">STREAMING</span></h1><p class="text-[9px] text-slate-400 font-bold hidden sm:block">Control v14.1</p></div>
         </div>
         <button onclick="DATA.forceSync()" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 hover:bg-indigo-100 transition flex items-center gap-2"><i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">Sincronizar</span></button>
     </header>
@@ -98,14 +106,14 @@
                 </div>
             </div>
 
-            <!-- 2. HISTORY, 3. CONFIG, 4. DASHBOARD (Misma estructura optimizada) -->
-            <!-- ... (Se mantienen igual, simplificado para no alargar) ... -->
-             <div id="view-history" class="view-section hidden w-full">
+            <!-- 2. HISTORY -->
+            <div id="view-history" class="view-section hidden w-full">
                 <h2 class="text-xl font-black text-slate-800 mb-4 flex gap-2 items-center"><i class="fa-solid fa-list-check text-indigo-500"></i> Historial</h2>
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6"><div class="grid grid-cols-2 md:grid-cols-4 gap-3 items-end"><div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Desde</label><input type="date" id="filter-start" onchange="UI.renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></div><div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Hasta</label><input type="date" id="filter-end" onchange="UI.renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></div><div class="col-span-2 md:col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Vendedor</label><select id="filter-seller" onchange="UI.renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></select></div><button onclick="UI.exportToExcel()" class="col-span-2 md:col-span-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold shadow flex justify-center items-center gap-2 text-xs h-[34px] transition"><i class="fa-solid fa-file-excel"></i> Exportar</button></div></div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col h-[500px]"><div class="overflow-x-auto flex-1"><table class="w-full text-sm text-left whitespace-nowrap"><thead class="bg-slate-50 text-xs text-slate-500 uppercase sticky top-0 z-10 font-bold"><tr><th class="p-4">Detalle</th><th class="p-4">Cliente</th><th class="p-4 text-right">Comisión</th><th class="p-4 text-center">Acción</th></tr></thead><tbody id="history-body" class="divide-y divide-gray-100"></tbody></table></div></div><div class="lg:col-span-1 bg-slate-900 text-white p-6 rounded-3xl shadow-xl sticky top-0 h-fit"><h3 class="font-bold text-base mb-4 flex gap-2"><i class="fa-solid fa-wallet text-indigo-400"></i> Caja Real</h3><div class="space-y-3 mb-6 border-b border-slate-700 pb-4"><div class="flex justify-between"><span class="text-slate-400 text-xs">Ventas</span><span class="font-mono font-bold" id="liq-total">0.00</span></div><div class="flex justify-between"><span class="text-slate-400 text-xs">Ops</span><span class="font-mono font-bold" id="liq-count">0</span></div><div class="flex justify-between text-red-400"><span class="text-xs">Reembolsos</span><span class="font-mono font-bold" id="liq-refunds">0</span></div></div><div class="bg-indigo-600 p-4 rounded-xl text-center"><p class="text-[10px] font-bold uppercase mb-1 text-indigo-200">A PAGAR</p><p class="text-3xl font-black font-mono" id="liq-comm">0.00</p></div></div></div>
             </div>
             
+            <!-- 3. CONFIG -->
             <div id="view-config" class="view-section hidden w-full pb-20">
                 <h2 class="text-xl font-black text-slate-800 mb-6">CONFIGURACIÓN</h2>
                 <div class="flex flex-col gap-6">
@@ -115,7 +123,7 @@
                 </div>
             </div>
 
-            <div id="view-dashboard" class="view-section hidden w-full"><h2 class="text-xl font-black text-slate-800 mb-6">REPORTES</h2><div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6"><div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[10px] text-slate-400 font-bold uppercase">Ventas</p><p id="dash-total" class="text-xl font-black text-slate-800">0.00</p></div><div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[10px] text-indigo-500 font-bold uppercase">Utilidad</p><p id="dash-admin" class="text-xl font-black text-indigo-600">0.00</p></div><div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[10px] text-emerald-500 font-bold uppercase">Comisiones</p><p id="dash-seller" class="text-xl font-black text-emerald-600">0.00</p></div><div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[10px] text-slate-400 font-bold uppercase">Ops</p><p id="dash-count" class="text-xl font-black text-slate-800">0</p></div></div><div class="bg-white p-4 rounded-2xl border shadow-sm h-64 md:h-96 w-full"><canvas id="chartSellers"></canvas></div></div>
+            <div id="view-dashboard" class="view-section hidden w-full"><h2 class="text-xl font-black text-slate-800 mb-6">REPORTES</h2><div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6"><div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[10px] text-slate-400 font-bold uppercase">Ventas</p><p id="dash-total" class="text-xl font-black text-slate-800">0.00</p></div><div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[10px] text-indigo-500 font-bold uppercase">Utilidad</p><p id="dash-admin" class="text-xl font-black text-indigo-600">0.00</p></div><div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[10px] text-emerald-500 font-bold uppercase">Comisiones</p><p id="dash-seller" class="text-xl font-black text-emerald-600">0.00</p></div><div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[10px] text-slate-400 font-bold uppercase">Ops</p><p id="dash-count" class="text-xl font-black text-slate-800">0.00</p></div></div><div class="bg-white p-4 rounded-2xl border shadow-sm h-64 md:h-96 w-full"><canvas id="chartSellers"></canvas></div></div>
 
         </div>
     </main>
@@ -125,11 +133,10 @@
     <script>
         // ==========================================
         //  TU URL DE GOOGLE APPS SCRIPT
-        //  REEMPLAZA AQUÍ SI LA CAMBIAS
         // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbwk_JajmG_hS76ZTIuZX5COoNmUU301cqLtkJ_s_hWhe_W1yYkD1-b_8w3P9386jBNWQw/exec";
-        // ==========================================
-
+        
+        // ESTADO GLOBAL
         const DEFAULT_DB = { sellers: [], products: [], sales: [], config: { adminPct: 0.60, sellerPct: 0.40 } };
         let DB = JSON.parse(localStorage.getItem('kgb_v14_db')) || DEFAULT_DB;
 
@@ -159,15 +166,16 @@
             renderPosSelects: () => {
                 const sSel = document.getElementById('pos-seller');
                 const pSel = document.getElementById('pos-product');
+                // Guardar
+                const currP = pSel.value; const currS = sSel.value;
                 sSel.innerHTML = DB.sellers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
                 pSel.innerHTML = '<option value="">Seleccione...</option>' + DB.products.map((p,i) => `<option value="${i}">${p.name}</option>`).join('');
-                document.getElementById('pos-id').innerText = '#' + Math.floor(Math.random()*10000);
                 
-                // Si hay productos, calcular el primero por defecto para evitar NaN
-                if(DB.products.length > 0) {
-                    pSel.value = 0;
-                    UI.updatePosCalc();
-                }
+                // Restaurar
+                if(currS) sSel.value = currS;
+                if(currP && DB.products[currP]) pSel.value = currP;
+
+                document.getElementById('pos-id').innerText = '#' + Math.floor(Math.random()*10000);
             },
             updatePosCalc: () => {
                 const idx = document.getElementById('pos-product').value;
@@ -176,7 +184,7 @@
                 }
                 const p = DB.products[idx];
                 document.getElementById('pos-cost').value = parseFloat(p.cost).toFixed(2);
-                document.getElementById('pos-price').value = parseFloat(p.price).toFixed(2); // FORZAR PRECIO NUEVO
+                document.getElementById('pos-price').value = parseFloat(p.price).toFixed(2); // FIX: Forzar update precio
                 UI.reCalcProfitOnly();
             },
             reCalcProfitOnly: () => {
@@ -185,10 +193,8 @@
                 const profit = p - c;
                 document.getElementById('pos-profit').innerText = profit.toFixed(2);
                 
-                // Asegurar porcentajes válidos
                 const ap = DB.config.adminPct || 0.60;
                 const sp = DB.config.sellerPct || 0.40;
-                
                 document.getElementById('view-admin').innerText = (profit * ap).toFixed(2);
                 document.getElementById('view-seller').innerText = (profit * sp).toFixed(2);
                 document.getElementById('lbl-admin').innerText = (ap * 100).toFixed(0) + '%';
@@ -204,7 +210,10 @@
             updateConfigRange: (s) => { const v=parseInt(document.getElementById('range-'+s).value); document.getElementById(s==='admin'?'range-seller':'range-admin').value=100-v; },
             renderHistoryTable: () => {
                 const sEl = document.getElementById('filter-seller');
+                const cf = sEl.value;
                 if(sEl.options.length <= 1) sEl.innerHTML = '<option value="">Todos</option>' + DB.sellers.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+                sEl.value = cf;
+                
                 const start = document.getElementById('filter-start').value, end = document.getElementById('filter-end').value, sel = document.getElementById('filter-seller').value;
                 let d = DB.sales;
                 if(start) d = d.filter(x => x.date.split('T')[0] >= start);
@@ -275,7 +284,9 @@
                 const idx = document.getElementById('pos-product').value; const sId = document.getElementById('pos-seller').value; if(idx==="" || sId==="") return alert("Faltan datos");
                 const p = DB.products[idx]; const s = DB.sellers.find(x => x.id == sId);
                 const price = parseFloat(document.getElementById('pos-price').value); const prof = price - p.cost;
-                DATA.post({ action: 'sale', id: Date.now().toString(), date: new Date().toISOString(), seller: s.name, product: p.name, client: document.getElementById('pos-client').value, phone: document.getElementById('pos-phone').value, cost: p.cost, price: price, profit: prof, admin: prof * (DB.config.adminPct||0.6), comm: prof * (DB.config.sellerPct||0.4) });
+                const ap = DB.config.adminPct || 0.6; const sp = DB.config.sellerPct || 0.4; // Safety Defaults
+                
+                DATA.post({ action: 'sale', id: Date.now().toString(), date: new Date().toISOString(), seller: s.name, product: p.name, client: document.getElementById('pos-client').value, phone: document.getElementById('pos-phone').value, cost: p.cost, price: price, profit: prof, admin: prof * ap, comm: prof * sp });
                 document.getElementById('pos-client').value=''; document.getElementById('pos-phone').value='';
             },
             addSeller: () => { const n = document.getElementById('new-seller-name').value; const ph = document.getElementById('new-seller-phone').value; if(!n) return; DATA.post({ action: 'add_seller', id: Date.now().toString(), name: n, phone: ph }); document.getElementById('new-seller-name').value=''; },
@@ -292,6 +303,7 @@
         document.getElementById('range-admin').oninput = function() { const v = parseInt(this.value); document.getElementById('range-seller').value = 100 - v; };
 
         // START
+        setInterval(()=> { const d=new Date(); document.getElementById('clock').innerText=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }, 1000);
         UI.renderPosSelects();
         DATA.sync();
     </script>
