@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KGB STREAMING v8.0 | Blindado</title>
-    
-    <!-- LIBRERÍAS EXTERNAS -->
+    <title>KGB STREAMING v9.0 | Unlocked</title>
+    <!-- LIBRERÍAS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
@@ -20,9 +19,10 @@
         /* Sidebar y Transiciones */
         #sidebar { transition: transform 0.3s ease-in-out; }
         #mobile-overlay { transition: opacity 0.3s ease-in-out; }
-
-        /* Loader Discreto */
-        #sync-indicator { transition: opacity 0.5s; pointer-events: none; }
+        
+        /* Loader no bloqueante por defecto */
+        #loader { z-index: 100; transition: opacity 0.3s; pointer-events: none; opacity: 0; }
+        #loader.active { pointer-events: all; opacity: 1; }
 
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -31,19 +31,19 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-800 bg-slate-50">
 
-    <!-- INDICADOR DE SINCRONIZACIÓN -->
-    <div id="sync-indicator" class="fixed top-4 right-4 z-[60] bg-slate-900 text-white text-xs px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2 opacity-0">
-        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-        <span id="sync-text">Guardando...</span>
+    <!-- LOADER (Inicia oculto) -->
+    <div id="loader" class="fixed inset-0 bg-slate-900/90 flex flex-col items-center justify-center text-white">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-500 mb-4"></div>
+        <h2 class="text-xl font-bold tracking-widest">PROCESANDO...</h2>
     </div>
 
     <!-- OVERLAY MÓVIL -->
     <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden backdrop-blur-sm"></div>
 
-    <!-- SIDEBAR (Barra Lateral Fija en PC, Oculta en Móvil) -->
+    <!-- SIDEBAR -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col z-50 shadow-2xl border-r border-slate-800 transform -translate-x-full md:translate-x-0 h-full transition-transform duration-300">
         
-        <!-- Header Móvil Sidebar -->
+        <!-- Mobile Close Header -->
         <div class="flex justify-between items-center p-4 md:hidden border-b border-slate-800 bg-slate-950">
             <span class="font-bold text-white text-xs uppercase tracking-widest">Menú</span>
             <button onclick="toggleMobileMenu()" class="text-white hover:text-red-400 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
@@ -57,31 +57,32 @@
             </div>
         </div>
 
-        <!-- Navegación -->
+        <!-- NAVEGACIÓN (BOTONES) -->
         <div class="flex-1 overflow-y-auto px-4 py-6 space-y-3">
             <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">Operaciones</div>
-            <button onclick="switchAppTab('pos')" id="nav-pos" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition active bg-indigo-700 text-white font-bold shadow-lg">
+            <!-- Los onclick llaman a funciones globales definidas en el SCRIPT UI al final -->
+            <button onclick="switchTab('pos')" id="nav-pos" class="nav-item active w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition active bg-indigo-700 text-white font-bold shadow-lg">
                 <i class="fa-solid fa-cart-shopping w-5 mr-3"></i> <span>Venta Nueva</span>
             </button>
-            <button onclick="switchAppTab('history')" id="nav-history" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
+            <button onclick="switchTab('history')" id="nav-history" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
                 <i class="fa-solid fa-list-check w-5 mr-3"></i> <span>Historial</span>
             </button>
             
             <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2 mt-6">Gestión</div>
-            <button onclick="switchAppTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
                 <i class="fa-solid fa-chart-pie w-5 mr-3"></i> <span>Reportes</span>
             </button>
-            <button onclick="switchAppTab('config')" id="nav-config" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
+            <button onclick="switchTab('config')" id="nav-config" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition">
                 <i class="fa-solid fa-sliders w-5 mr-3"></i> <span>Configuración</span>
             </button>
         </div>
 
         <div class="p-5 bg-black/20 border-t border-slate-800 text-center text-xs">
             <div class="flex items-center justify-center gap-2 mb-1">
-                <div id="connection-dot" class="w-2 h-2 rounded-full bg-orange-500"></div>
-                <span id="connection-text" class="font-bold text-slate-300">Modo Local</span>
+                <div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-orange-500"></div>
+                <span id="status-text" class="font-bold text-slate-300">Iniciando...</span>
             </div>
-            <p class="text-indigo-500 font-bold">v8.0 Blindado</p>
+            <p class="text-indigo-500 font-bold">José Vizcarra</p>
         </div>
     </aside>
 
@@ -93,9 +94,9 @@
             </button>
             <div>
                 <h1 class="text-lg md:text-xl font-black text-slate-900 tracking-tight leading-none">KGB <span class="text-indigo-600">STREAMING</span></h1>
+                <p class="text-[9px] text-slate-400 font-bold hidden sm:block">Panel de Control v9.0</p>
             </div>
         </div>
-        <!-- Clock -->
         <div class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full border hidden sm:block">
             <span id="clock">--:--</span>
         </div>
@@ -110,6 +111,7 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-5 border-b border-gray-100 flex justify-between items-center">
                         <h2 class="text-base md:text-lg font-black text-slate-800 flex gap-2"><i class="fa-solid fa-cash-register text-indigo-600"></i> REGISTRAR</h2>
+                        <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-bold">ID: <span id="pos-id">#--</span></span>
                     </div>
                     <div class="p-6 md:p-8 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -134,7 +136,7 @@
 
             <!-- 2. HISTORY -->
             <div id="tab-history" class="app-tab hidden w-full">
-                <h2 class="text-xl font-black text-slate-800 mb-4 flex gap-2 items-center"><i class="fa-solid fa-list-check text-indigo-500"></i> Historial</h2>
+                <h2 class="text-xl font-black text-slate-800 mb-4 flex gap-2 items-center"><i class="fa-solid fa-list-check text-indigo-500"></i> Historial (Nube)</h2>
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
                         <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Desde</label><input type="date" id="filter-start" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></div>
@@ -222,13 +224,38 @@
 
     <div id="toast" class="fixed bottom-8 right-1/2 translate-x-1/2 md:translate-x-0 md:right-8 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl translate-y-40 transition-transform duration-500 z-50 flex items-center gap-3 whitespace-nowrap"><div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white"><i class="fa-solid fa-check text-xs"></i></div><p class="text-xs md:text-sm font-bold">¡Hecho!</p></div>
 
+    <!-- SCRIPT DE INTERFAZ (MENÚ) - SIEMPRE FUNCIONA -->
+    <script>
+        // Funciones UI Globales (Fuera de Módulo para evitar bloqueos)
+        function toggleMobileMenu() {
+            const s=document.getElementById('sidebar'), o=document.getElementById('mobile-overlay');
+            if(s.classList.contains('-translate-x-full')){s.classList.remove('-translate-x-full');o.classList.remove('hidden');}else{s.classList.add('-translate-x-full');o.classList.add('hidden');}
+        }
+        function closeMobileMenu() { document.getElementById('sidebar').classList.add('-translate-x-full'); document.getElementById('mobile-overlay').classList.add('hidden'); }
+        
+        function switchAppTab(t) { 
+            document.querySelectorAll('.app-tab').forEach(e=>e.classList.add('hidden')); 
+            document.getElementById('tab-'+t).classList.remove('hidden'); 
+            document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active','bg-indigo-700','text-white')); 
+            document.getElementById('nav-'+t).classList.add('active','bg-indigo-700','text-white'); 
+            if(t==='history' && window.renderHistoryTable) window.renderHistoryTable(); 
+            if(t==='dashboard' && window.updateDashboard) window.updateDashboard();
+            if(window.innerWidth<768) closeMobileMenu(); 
+        }
+        
+        function showToast(m) { const t=document.getElementById('toast');t.querySelector('p').innerText=m;t.classList.remove('translate-y-40');setTimeout(()=>t.classList.add('translate-y-40'),3000); }
+        
+        // Reloj
+        setInterval(()=> { const d=new Date(); document.getElementById('clock').innerText=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }, 1000);
+    </script>
+
     <!-- FIREBASE MODULE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, onSnapshot, doc, updateDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         // ==========================================
-        //  CONFIGURACIÓN FIREBASE INTEGRADA
+        //  TU LLAVE (YA INTEGRADA)
         // ==========================================
         const firebaseConfig = {
           apiKey: "AIzaSyDrMs4FRGpGeVGw1gWLltOWZlQVeYFpQf8",
@@ -236,12 +263,11 @@
           projectId: "kgb-system",
           storageBucket: "kgb-system.firebasestorage.app",
           messagingSenderId: "850376757764",
-          appId: "1:850376757764:web:0976c465dd91a236405b51",
-          measurementId: "G-6SCRBS3GQ9"
+          appId: "1:850376757764:web:80f62ecbe11b4f25405b51",
+          measurementId: "G-Y4WG6QN4KQ"
         };
-        // ==========================================
 
-        // --- INICIALIZACIÓN ROBUSTA ---
+        // --- INICIALIZACIÓN ---
         let db = null;
         let STATE = JSON.parse(localStorage.getItem('kgb_local_db_v8')) || { sellers: [], products: [], sales: [], config: { adminPct: 0.60, sellerPct: 0.40 } };
 
@@ -249,46 +275,59 @@
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             setupCloudListeners();
+            updateStatus(true);
+            document.getElementById('loader').classList.add('hidden'); // Ocultar loader al conectar
         } catch (e) {
-            console.error("Error Firebase:", e);
-            document.getElementById('connection-text').innerText = "OFFLINE";
-            document.getElementById('connection-dot').classList.replace('bg-green-500', 'bg-red-500');
+            console.error("Modo Offline (Error Init):", e);
+            updateStatus(false);
+            document.getElementById('loader').classList.add('hidden'); // Ocultar loader aunque falle
+        }
+
+        function updateStatus(isCloud) {
+            const dot = document.getElementById('status-dot');
+            const txt = document.getElementById('status-text'); // Fixed ID usage in HTML
+            // Note: HTML uses 'status-text' but sidebar HTML actually has it? Wait, let me check the sidebar HTML above.
+            // Sidebar HTML has: <span class="font-bold text-slate-300">Conectado</span> inside a div, but no ID on span in provided V6.1.
+            // Correcting selector strategy:
+            // Actually, in this v7.0 HTML I added IDs connection-dot and connection-text in sidebar.
+            // But let's verify if I named them correctly in HTML block above.
+            // Sidebar block above: id="status-dot", span has no ID but class text-slate-300. 
+            // Let's target parent div and update content safely.
+            const statusContainer = document.querySelector('.bg-black\\/20 .flex'); // Target footer status container
+            if(statusContainer) {
+                if (isCloud) {
+                    statusContainer.innerHTML = `<div class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div><span class="font-bold text-green-400">Nube Activa</span>`;
+                } else {
+                    statusContainer.innerHTML = `<div class="w-2.5 h-2.5 rounded-full bg-orange-500"></div><span class="font-bold text-orange-400">Modo Local</span>`;
+                }
+            }
+            refreshUI();
         }
 
         // --- SISTEMA DUAL: NUBE O LOCAL ---
-        // 1. Guardar Localmente (Inmediato) -> Actualizar UI
-        // 2. Intentar Nube (Asíncrono)
-        
         async function saveData(col, data) {
-            showSyncStatus(true);
-            // Optimistic UI Update (Local)
-            const tempId = 'temp_' + Date.now();
-            if(col==='kgb_sales') STATE.sales.unshift({...data, id: tempId}); 
-            else if(col==='kgb_sellers') STATE.sellers.push({...data, id: tempId});
-            else if(col==='kgb_products') STATE.products.push({...data, id: tempId});
+            // Guardar Local Primero
+            if(col==='kgb_sales') STATE.sales.unshift({...data, id: 'temp_'+Date.now()}); 
+            else if(col==='kgb_sellers') STATE.sellers.push({...data, id: 'temp_'+Date.now()});
+            else if(col==='kgb_products') STATE.products.push({...data, id: 'temp_'+Date.now()});
             else if(col==='kgb_config') STATE.config = data;
             
-            saveLocal(); // Persistir en LS
-            refreshUI(); // Refrescar Pantalla
+            saveLocal();
+            refreshUI();
 
-            // Sync Nube
+            // Cloud Sync
             if(db) {
                 try {
                     if(col==='kgb_config') await setDoc(doc(db, "kgb_config", "main"), data);
                     else await addDoc(collection(db, col), data);
-                    showToast("Sincronizado");
-                } catch(e) { 
-                    console.error("Fallo Nube:", e);
-                    showToast("Guardado Localmente (Sin Nube)"); 
-                }
+                    showToast("Guardado en Nube");
+                } catch(e) { showToast("Guardado Localmente"); }
             } else {
                 showToast("Guardado Local");
             }
-            showSyncStatus(false);
         }
         
         async function updateData(col, id, data) {
-            showSyncStatus(true);
             // Update Local
             if (col==='kgb_sellers') { const i=STATE.sellers.findIndex(x=>x.id==id); if(i>-1) Object.assign(STATE.sellers[i], data); }
             if (col==='kgb_products') { const i=STATE.products.findIndex(x=>x.id==id); if(i>-1) Object.assign(STATE.products[i], data); }
@@ -297,43 +336,21 @@
             refreshUI();
 
             // Update Cloud
-            if(db && !id.startsWith('temp_')) {
+            if(db && !String(id).startsWith('temp_')) {
                 try { await updateDoc(doc(db, col, id), data); } catch(e){}
             }
-            showSyncStatus(false);
         }
 
-        function saveLocal() {
-            localStorage.setItem('kgb_local_db_v8', JSON.stringify(STATE));
-        }
-
-        function showSyncStatus(loading) {
-            const ind = document.getElementById('sync-indicator');
-            ind.style.opacity = loading ? "1" : "0";
-        }
+        function saveLocal() { localStorage.setItem('kgb_local_db_v8', JSON.stringify(STATE)); }
 
         function setupCloudListeners() {
-            // Si hay conexión, la UI se actualizará con los datos reales de la nube
-            onSnapshot(collection(db, "kgb_sellers"), s => { STATE.sellers=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.active); saveLocal(); refreshUI(); updateConnectionStatus(true); });
+            onSnapshot(collection(db, "kgb_sellers"), s => { STATE.sellers=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.active); saveLocal(); refreshUI(); });
             onSnapshot(collection(db, "kgb_products"), s => { STATE.products=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.active); saveLocal(); refreshUI(); });
-            onSnapshot(query(collection(db, "kgb_sales"), orderBy("date", "desc")), s => { STATE.sales=s.docs.map(d=>({id:d.id,...d.data()})); saveLocal(); renderHistoryTable(); updateDashboard(); });
+            onSnapshot(query(collection(db, "kgb_sales"), orderBy("date", "desc")), s => { STATE.sales=s.docs.map(d=>({id:d.id,...d.data()})); saveLocal(); if(window.renderHistoryTable) window.renderHistoryTable(); });
             onSnapshot(doc(db, "kgb_config", "main"), s => { if(s.exists()) { STATE.config=s.data(); saveLocal(); updateConfigInputs(); } });
         }
 
-        function updateConnectionStatus(online) {
-            const dot = document.getElementById('status-dot'); const txt = document.getElementById('status-text');
-            if(online) { dot.classList.replace('bg-orange-500', 'bg-green-500'); txt.innerText = "Nube"; txt.classList.add('text-green-400'); }
-        }
-
-        // --- GLOBAL UI FUNCTIONS ---
-        window.toggleMobileMenu = () => { const s=document.getElementById('sidebar'), o=document.getElementById('mobile-overlay'); if(s.classList.contains('-translate-x-full')){s.classList.remove('-translate-x-full');o.classList.remove('hidden');}else{s.classList.add('-translate-x-full');o.classList.add('hidden');} };
-        window.closeMobileMenu = () => { document.getElementById('sidebar').classList.add('-translate-x-full'); document.getElementById('mobile-overlay').classList.add('hidden'); };
-        window.switchAppTab = (t) => { document.querySelectorAll('.app-tab').forEach(e=>e.classList.add('hidden')); document.getElementById('tab-'+t).classList.remove('hidden'); document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active','bg-indigo-700','text-white')); document.getElementById('nav-'+t).classList.add('active','bg-indigo-700','text-white'); if(t==='history') renderHistoryTable(); if(window.innerWidth<768) closeMobileMenu(); };
-        window.showToast = (m) => { const t=document.getElementById('toast');t.querySelector('p').innerText=m;t.classList.remove('translate-y-40');setTimeout(()=>t.classList.add('translate-y-40'),3000); };
-        
-        function refreshUI() { renderPosSelects(); renderFilterSeller(); renderSellerList(); renderProductList(); updatePosCalc(); }
-
-        // --- POS ---
+        // --- LOGIC: POS ---
         window.updatePosCalc = () => {
             const idx = document.getElementById('pos-product').value;
             if(idx === "" || !STATE.products[idx]) { document.getElementById('pos-cost').value='0.00'; document.getElementById('pos-price').value='0.00'; document.getElementById('pos-profit').innerText='0.00'; return; }
@@ -346,9 +363,8 @@
         document.getElementById('btn-submit').onclick = async () => {
             const idx = document.getElementById('pos-product').value; const sId = document.getElementById('pos-seller').value; if(idx==="" || sId==="") return alert("Faltan datos");
             const p = STATE.products[idx]; 
-            // Local fallback match
             const s = STATE.sellers.find(x => x.id == sId) || STATE.sellers[sId];
-            
+
             const price = parseFloat(document.getElementById('pos-price').value); const prof = price - p.cost;
             const sale = {
                 date: new Date().toISOString(), seller: s.name, sellerPhone: s.phone, product: p.name, 
@@ -356,33 +372,31 @@
                 comm: prof*STATE.config.sellerPct, client: document.getElementById('pos-client').value, 
                 phone: document.getElementById('pos-phone').value, status: 'active'
             };
-            saveData('kgb_sales', sale);
+            await saveData('kgb_sales', sale);
             document.getElementById('pos-client').value=''; document.getElementById('pos-phone').value='';
         };
 
         // --- ACTIONS ---
         document.getElementById('btn-seller-action').onclick = async () => {
             const id = document.getElementById('edit-seller-id').value; const name = document.getElementById('new-seller-name').value; const phone = document.getElementById('new-seller-phone').value; if(!name) return;
-            if(id) { updateData('kgb_sellers', id, {name, phone}); cancelEdit('seller'); } 
-            else { saveData('kgb_sellers', { name, phone, active: true }); }
+            if(id) { await updateData('kgb_sellers', id, {name, phone}); showToast("Actualizado"); cancelEdit('seller'); } 
+            else { await saveData('kgb_sellers', { name, phone, active: true }); showToast("Creado"); }
             document.getElementById('new-seller-name').value=''; document.getElementById('new-seller-phone').value='';
         };
         document.getElementById('btn-prod-action').onclick = async () => {
             const id = document.getElementById('edit-prod-id').value; const name = document.getElementById('new-prod-name').value; const cost = parseFloat(document.getElementById('new-prod-cost').value); const price = parseFloat(document.getElementById('new-prod-price').value); if(!name) return;
-            if(id) { updateData('kgb_products', id, {name, cost, price}); cancelEdit('prod'); } 
-            else { saveData('kgb_products', { name, cost, price, active: true }); }
+            if(id) { await updateData('kgb_products', id, {name, cost, price}); showToast("Actualizado"); cancelEdit('prod'); } 
+            else { await saveData('kgb_products', { name, cost, price, active: true }); showToast("Creado"); }
             document.getElementById('new-prod-name').value='';
         };
-        document.getElementById('btn-save-config').onclick = async () => { 
-            saveData('kgb_config', { adminPct: document.getElementById('range-admin').value / 100, sellerPct: document.getElementById('range-seller').value / 100 }); 
-        };
+        document.getElementById('btn-save-config').onclick = async () => { await saveData('kgb_config', { adminPct: document.getElementById('range-admin').value / 100, sellerPct: document.getElementById('range-seller').value / 100 }); };
 
-        window.deleteItem = (c, id) => { if(confirm("¿Eliminar?")) updateData(c, id, { active: false }); };
-        window.refundSale = (id) => { if(confirm("¿Anular?")) updateData('kgb_sales', id, { status: 'REFUNDED' }); };
+        window.deleteItem = async (c, id) => { if(confirm("¿Eliminar?")) await updateData(c, id, { active: false }); };
+        window.refundSale = async (id) => { if(confirm("¿Anular?")) await updateData('kgb_sales', id, { status: 'REFUNDED' }); };
 
         window.prepareEdit = (t, id) => {
-            if(t==='seller') { const s = STATE.sellers.find(x=>x.id===id); document.getElementById('edit-seller-id').value=id; document.getElementById('new-seller-name').value=s.name; document.getElementById('new-seller-phone').value=s.phone; document.getElementById('seller-mode-badge').innerText="EDITAR"; document.getElementById('btn-seller-action').innerText="Actualizar"; document.getElementById('btn-seller-action').classList.replace('bg-slate-800', 'bg-blue-600'); document.getElementById('btn-seller-cancel').classList.remove('hidden'); }
-            else { const p = STATE.products.find(x=>x.id===id); document.getElementById('edit-prod-id').value=id; document.getElementById('new-prod-name').value=p.name; document.getElementById('new-prod-cost').value=p.cost; document.getElementById('new-prod-price').value=p.price; document.getElementById('prod-mode-badge').innerText="EDITAR"; document.getElementById('btn-prod-action').innerText="Actualizar"; document.getElementById('btn-prod-action').classList.replace('bg-indigo-600', 'bg-blue-600'); document.getElementById('btn-prod-cancel').classList.remove('hidden'); }
+            if(t==='seller') { const s = STATE.sellers.find(x=>x.id===id); document.getElementById('edit-seller-id').value=id; document.getElementById('new-seller-name').value=s.name; document.getElementById('new-seller-phone').value=s.phone; document.getElementById('seller-mode-badge').innerText="EDITANDO"; document.getElementById('btn-seller-action').innerText="Actualizar"; document.getElementById('btn-seller-action').classList.replace('bg-slate-800', 'bg-blue-600'); document.getElementById('btn-seller-cancel').classList.remove('hidden'); }
+            else { const p = STATE.products.find(x=>x.id===id); document.getElementById('edit-prod-id').value=id; document.getElementById('new-prod-name').value=p.name; document.getElementById('new-prod-cost').value=p.cost; document.getElementById('new-prod-price').value=p.price; document.getElementById('prod-mode-badge').innerText="EDITANDO"; document.getElementById('btn-prod-action').innerText="Actualizar"; document.getElementById('btn-prod-action').classList.replace('bg-indigo-600', 'bg-blue-600'); document.getElementById('btn-prod-cancel').classList.remove('hidden'); }
         };
         window.cancelEdit = (t) => { 
             document.getElementById(t==='seller'?'edit-seller-id':'edit-prod-id').value=''; document.getElementById(t==='seller'?'new-seller-name':'new-prod-name').value=''; 
@@ -414,13 +428,16 @@
         };
         window.copyV = (t) => { const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast("Copiado"); };
         function renderFilterSeller() { const sel = document.getElementById('filter-seller'); sel.innerHTML = '<option value="">Todos</option>' + STATE.sellers.map(s => `<option value="${s.id}">${s.name}</option>`).join(''); }
-        function updateDashboard(){let t=0,a=0,s=0,c=0,ss={};STATE.sales.forEach(x=>{if(x.status!=='REFUNDED'){t+=Number(x.price);a+=Number(x.admin);s+=Number(x.comm);c++;if(!ss[x.seller])ss[x.seller]=0;ss[x.seller]+=Number(x.comm);}});document.getElementById('dash-total').innerText=t.toFixed(2);document.getElementById('dash-admin').innerText=a.toFixed(2);document.getElementById('dash-seller').innerText=s.toFixed(2);document.getElementById('dash-count').innerText=c;const ctx=document.getElementById('chartSellers').getContext('2d');new Chart(ctx,{type:'bar',data:{labels:Object.keys(ss),datasets:[{label:'Comisión',data:Object.values(ss),backgroundColor:'#4f46e5',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});}
+        
+        window.updateDashboard = () => {
+            let t=0,a=0,s=0,c=0; STATE.sales.forEach(x=>{if(x.status!=='REFUNDED'){t+=Number(x.price);a+=Number(x.admin);s+=Number(x.comm);c++;}});
+            document.getElementById('dash-total').innerText=t.toFixed(2);document.getElementById('dash-admin').innerText=a.toFixed(2);document.getElementById('dash-seller').innerText=s.toFixed(2);document.getElementById('dash-count').innerText=c;
+        };
         window.exportToExcel = () => { const ws=XLSX.utils.json_to_sheet(STATE.sales); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Ventas"); XLSX.writeFile(wb,"Reporte_Cloud.xlsx"); };
 
         document.getElementById('range-admin').oninput = function() { const v = parseInt(this.value); document.getElementById('range-seller').value = 100 - v; };
 
         // INIT LOAD
-        setInterval(()=> { const d=new Date(); document.getElementById('clock').innerText=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }, 1000);
         refreshUI();
     </script>
 </body>
