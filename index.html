@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KGB STREAMING v4.4 | Menu Fix</title>
+    <title>KGB STREAMING v4.5 | Sliding Menu</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -22,8 +22,10 @@
         .refunded-row { background-color: #fee2e2 !important; }
         .refunded-text { color: #991b1b !important; text-decoration: line-through; opacity: 0.6; }
         
-        /* Sidebar Mobile Override Class */
-        .mobile-menu-open { transform: translateX(0) !important; }
+        /* --- TRANSICIONES SUAVES PARA EL MENÚ --- */
+        #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        #main-content { transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        #toggle-btn { transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -32,15 +34,10 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-800 bg-slate-50">
 
-    <!-- Header -->
-    <header class="bg-white border-b border-gray-200 shadow-sm z-30 h-16 flex-shrink-0 relative">
-        <div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <!-- Botón Menú Móvil (Solo visible en pantallas pequeñas) -->
-                <button onclick="toggleSidebar()" class="md:hidden text-slate-600 focus:outline-none p-2 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition">
-                    <i class="fa-solid fa-bars text-xl"></i>
-                </button>
-
+    <!-- Header (Fixed Top) -->
+    <header class="bg-white border-b border-gray-200 shadow-sm z-40 h-16 flex-shrink-0 relative w-full">
+        <div class="max-w-full px-4 h-full flex items-center justify-between">
+            <div class="flex items-center gap-3 md:ml-0 transition-all duration-300" id="header-logo-area">
                 <div class="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-indigo-500 font-bold text-lg shadow-lg border border-slate-700">
                     <i class="fa-solid fa-play"></i>
                 </div>
@@ -48,7 +45,6 @@
                     <h1 class="text-lg md:text-2xl font-black text-slate-900 tracking-tighter leading-none uppercase">
                         KGB <span class="text-indigo-600">STREAMING</span>
                     </h1>
-                    <p class="text-[9px] md:text-[10px] text-slate-400 font-bold tracking-widest uppercase hidden sm:block">Sistema Local v4.4</p>
                 </div>
             </div>
             
@@ -64,57 +60,49 @@
         </div>
     </header>
 
-    <!-- Main Wrapper -->
-    <div class="flex-1 overflow-hidden relative flex">
+    <!-- Main Body Container -->
+    <div class="flex-1 overflow-hidden relative w-full h-full flex">
         
-        <!-- Mobile Overlay (Fondo oscuro al abrir menú en celular) -->
-        <div id="mobile-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity duration-300"></div>
-
-        <!-- Sidebar -->
-        <!-- Lógica CSS: 
-             - fixed: Fijo en móvil para sobreponerse.
-             - md:relative: Relativo en PC para empujar el contenido.
-             - -translate-x-full: Oculto por defecto en móvil (fuera de pantalla a la izq).
-             - md:translate-x-0: Siempre visible en PC (posición 0).
-        -->
-        <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col z-50 shadow-2xl border-r border-slate-800 h-full transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0">
-            <div class="p-6 flex justify-between items-center">
-                <div class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Navegación</div>
-                <!-- Botón cerrar solo visible en móvil -->
-                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <!-- SIDEBAR (Fixed Left) -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col z-50 shadow-2xl border-r border-slate-800 h-full pt-16 transform -translate-x-full md:translate-x-0">
+            <div class="p-6">
+                <div class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-6">Navegación</div>
+                <nav class="space-y-2">
+                    <button onclick="switchAppTab('pos')" id="nav-pos" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition active bg-indigo-700 text-white font-bold shadow-lg group">
+                        <i class="fa-solid fa-cart-shopping w-5 mr-3 group-hover:scale-110 transition"></i> <span>Venta Nueva</span>
+                    </button>
+                    <button onclick="switchAppTab('history')" id="nav-history" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
+                        <i class="fa-solid fa-list-check w-5 mr-3 group-hover:scale-110 transition"></i> <span>Historial</span>
+                    </button>
+                    <button onclick="switchAppTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
+                        <i class="fa-solid fa-chart-pie w-5 mr-3 group-hover:scale-110 transition"></i> <span>Reportes</span>
+                    </button>
+                    <button onclick="switchAppTab('config')" id="nav-config" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition text-slate-400 hover:text-white group">
+                        <i class="fa-solid fa-sliders w-5 mr-3 group-hover:scale-110 transition"></i> <span>Configuración</span>
+                    </button>
+                </nav>
             </div>
-            
-            <nav class="space-y-2 px-4 flex-1 overflow-y-auto">
-                <button onclick="switchAppTab('pos')" id="nav-pos" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition active bg-indigo-700 text-white font-bold shadow-lg group">
-                    <i class="fa-solid fa-cart-shopping w-5 mr-3 group-hover:scale-110 transition"></i> <span>Venta Nueva</span>
-                </button>
-                <button onclick="switchAppTab('history')" id="nav-history" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
-                    <i class="fa-solid fa-list-check w-5 mr-3 group-hover:scale-110 transition"></i> <span>Historial</span>
-                </button>
-                <button onclick="switchAppTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
-                    <i class="fa-solid fa-chart-pie w-5 mr-3 group-hover:scale-110 transition"></i> <span>Reportes</span>
-                </button>
-                <button onclick="switchAppTab('config')" id="nav-config" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition text-slate-400 hover:text-white group">
-                    <i class="fa-solid fa-sliders w-5 mr-3 group-hover:scale-110 transition"></i> <span>Configuración</span>
-                </button>
-            </nav>
-            
-            <div class="p-5 bg-black/20 border-t border-slate-800 text-center">
+            <div class="mt-auto p-5 bg-black/20 border-t border-slate-800 text-center">
                 <p class="text-xs text-slate-500 font-bold">Base de Datos: Local</p>
                 <p class="text-sm font-extrabold text-indigo-400 mt-0.5">José Vizcarra</p>
             </div>
         </aside>
 
-        <!-- App Content -->
-        <main class="flex-1 bg-slate-50 overflow-y-auto p-4 md:p-8 relative w-full">
+        <!-- BOTÓN FLOTANTE DE TOGGLE (PESTAÑA) -->
+        <button id="toggle-btn" onclick="toggleSidebar()" class="fixed top-1/2 left-0 md:left-64 z-[60] w-8 h-12 bg-indigo-600 rounded-r-lg shadow-xl text-white flex items-center justify-center hover:bg-indigo-500 hover:w-10 transition-all cursor-pointer border-y border-r border-indigo-400">
+            <i class="fa-solid fa-chevron-right text-xs" id="toggle-icon"></i>
+        </button>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="flex-1 bg-slate-50 overflow-y-auto p-4 md:p-8 relative w-full md:ml-64">
             
-            <!-- BLUEPRINT VIEW -->
+            <!-- BLUEPRINT -->
             <div id="view-blueprint" class="hidden max-w-4xl mx-auto space-y-6">
-                <div class="bg-white p-6 rounded-xl border-l-4 border-indigo-500 shadow-sm"><h2 class="font-bold text-slate-800">Backend API</h2><p class="text-sm text-slate-500">Para uso con Google Sheets (Opcional).</p></div>
-                <div class="bg-slate-900 rounded-xl p-6 relative"><button onclick="copyCode()" class="absolute top-4 right-4 bg-indigo-600 text-white px-3 py-1 rounded text-xs">Copiar</button><pre id="backend-code" class="code-block text-xs text-indigo-300">/* Copia tu código Apps Script aquí */</pre></div>
+                <div class="bg-white p-6 rounded-xl border-l-4 border-indigo-500 shadow-sm"><h2 class="font-bold text-slate-800">Backend API</h2><p class="text-sm text-slate-500">Para Google Sheets.</p></div>
+                <div class="bg-slate-900 rounded-xl p-6 relative"><button onclick="copyCode()" class="absolute top-4 right-4 bg-indigo-600 text-white px-3 py-1 rounded text-xs">Copiar</button><pre id="backend-code" class="code-block text-xs text-indigo-300">/* Código Apps Script aquí */</pre></div>
             </div>
 
-            <!-- LIVE APP VIEW -->
+            <!-- LIVE APP -->
             <div id="view-app" class="flex flex-col gap-6">
                 
                 <!-- TAB: POS -->
@@ -126,11 +114,9 @@
                         </div>
                         <div class="p-5 md:p-8 space-y-6 md:space-y-8">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Vendedor</label><select id="pos-seller" class="w-full border-gray-200 bg-slate-50 rounded-xl p-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 border"></select></div>
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Plataforma</label><select id="pos-product" onchange="updatePosCalc()" class="w-full border-gray-200 bg-slate-50 rounded-xl p-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 border"></select></div>
+                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Vendedor</label><select id="pos-seller" class="w-full border-gray-200 bg-slate-50 rounded-xl p-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"></select></div>
+                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Plataforma</label><select id="pos-product" onchange="updatePosCalc()" class="w-full border-gray-200 bg-slate-50 rounded-xl p-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"></select></div>
                             </div>
-                            
-                            <!-- Calc Card -->
                             <div class="bg-slate-900 rounded-2xl p-6 md:p-8 shadow-xl relative overflow-hidden text-white group">
                                 <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-600 rounded-full filter blur-[50px] opacity-30 -mr-10 -mt-10"></div>
                                 <div class="grid grid-cols-3 gap-2 md:gap-8 text-center relative z-10">
@@ -139,7 +125,6 @@
                                     <div><p class="text-[8px] md:text-[10px] text-emerald-400 font-bold uppercase tracking-widest mb-1 md:mb-2">GANANCIA</p><p id="pos-profit" class="font-mono text-lg md:text-2xl text-emerald-400 font-bold mt-1">0.00</p></div>
                                 </div>
                             </div>
-
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Cliente</label><input type="text" id="pos-client" placeholder="Nombre" class="w-full border-gray-200 p-3 rounded-xl text-sm outline-none focus:border-indigo-500 border"></div>
                                 <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Teléfono</label><input type="tel" id="pos-phone" placeholder="999..." class="w-full border-gray-200 p-3 rounded-xl text-sm outline-none focus:border-indigo-500 border"></div>
@@ -155,7 +140,6 @@
                         <span class="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 text-sm md:text-base"><i class="fa-solid fa-list"></i></span>
                         Historial
                     </h2>
-
                     <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-200 mb-6">
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
                             <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Desde</label><input type="date" id="filter-start" onchange="renderHistoryTable()" class="w-full border-gray-200 rounded-lg p-2 text-xs md:text-sm outline-none border"></div>
@@ -164,25 +148,17 @@
                             <button onclick="exportToExcel()" class="col-span-2 md:col-span-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold shadow flex items-center justify-center gap-2 text-xs md:text-sm h-[38px]"><i class="fa-solid fa-file-excel"></i> Exportar</button>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[500px] md:h-[600px]">
                             <div class="overflow-x-auto flex-1">
                                 <table class="w-full text-sm text-left whitespace-nowrap md:whitespace-normal">
                                     <thead class="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 shadow-sm z-10 font-bold tracking-wider">
-                                        <tr>
-                                            <th class="px-4 py-3 md:px-6 md:py-4">Producto / Fecha</th>
-                                            <th class="px-4 py-3 md:px-6 md:py-4">Cliente</th>
-                                            <th class="px-4 py-3 md:px-6 md:py-4 text-right">Comisión</th>
-                                            <th class="px-4 py-3 md:px-6 md:py-4 text-center">Acciones</th>
-                                        </tr>
+                                        <tr><th class="px-4 py-3 md:px-6 md:py-4">Detalle</th><th class="px-4 py-3 md:px-6 md:py-4">Cliente</th><th class="px-4 py-3 md:px-6 md:py-4 text-right">Comisión</th><th class="px-4 py-3 md:px-6 md:py-4 text-center">Acción</th></tr>
                                     </thead>
                                     <tbody id="history-table-body" class="divide-y divide-gray-100"></tbody>
                                 </table>
                             </div>
                         </div>
-
-                        <!-- Summary -->
                         <div class="lg:col-span-1">
                             <div class="bg-slate-900 text-white p-6 md:p-8 rounded-3xl shadow-xl sticky top-6 border border-slate-700">
                                 <h3 class="font-bold text-base md:text-lg mb-4 md:mb-6 flex items-center gap-2"><i class="fa-solid fa-wallet text-indigo-400"></i> Caja Real</h3>
@@ -204,45 +180,24 @@
                 <div id="tab-config" class="app-tab hidden max-w-4xl mx-auto pb-10 w-full">
                     <h2 class="text-xl md:text-2xl font-black text-slate-800 mb-6">CONFIGURACIÓN</h2>
                     <div class="flex flex-col gap-6 md:gap-8">
-                        
-                        <!-- 1. PLATAFORMAS -->
                         <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-200">
                             <h3 class="font-bold text-slate-800 mb-4 md:mb-6 flex items-center gap-2 text-xs uppercase tracking-widest border-b pb-4"><i class="fa-solid fa-layer-group text-indigo-500"></i> Catálogo Plataformas</h3>
                             <div class="bg-indigo-50 p-4 md:p-5 rounded-xl mb-4 border border-indigo-100 flex flex-col md:flex-row gap-3">
                                 <input type="text" id="new-prod-name" placeholder="Nombre (Ej. Netflix)" class="flex-grow border border-indigo-200 bg-white rounded-lg px-3 py-2 text-sm outline-none">
                                 <div class="flex gap-2">
-                                    <input type="number" id="new-prod-cost" class="w-20 border border-indigo-200 bg-white rounded-lg px-2 py-2 text-sm text-center" placeholder="Costo">
-                                    <input type="number" id="new-prod-price" class="w-20 border border-indigo-200 bg-white rounded-lg px-2 py-2 text-sm text-center" placeholder="Venta">
-                                    <button onclick="addProduct()" class="bg-indigo-600 text-white px-4 rounded-lg font-bold text-sm shadow-md">Add</button>
+                                    <input type="number" id="new-prod-cost" class="w-20 border border-indigo-200 bg-white rounded-lg px-2 py-2 text-sm text-center" placeholder="Costo"><input type="number" id="new-prod-price" class="w-20 border border-indigo-200 bg-white rounded-lg px-2 py-2 text-sm text-center" placeholder="Venta"><button onclick="addProduct()" class="bg-indigo-600 text-white px-4 rounded-lg font-bold text-sm shadow-md">Add</button>
                                 </div>
                             </div>
-                            <div class="overflow-y-auto max-h-[300px] border border-gray-100 rounded-xl">
-                                <table class="w-full text-sm text-left"><thead class="bg-slate-50 text-slate-500 font-bold sticky top-0 z-10 text-xs"><tr><th class="p-3">Plataforma</th><th class="p-3 text-center">Costo</th><th class="p-3 text-center">Venta</th><th class="p-3 text-right"></th></tr></thead><tbody id="config-prod-list" class="divide-y divide-gray-100 text-slate-700"></tbody></table>
-                            </div>
+                            <div class="overflow-y-auto max-h-[300px] border border-gray-100 rounded-xl"><table class="w-full text-sm text-left"><thead class="bg-slate-50 text-slate-500 font-bold sticky top-0 z-10 text-xs"><tr><th class="p-3">Plataforma</th><th class="p-3 text-center">Costo</th><th class="p-3 text-center">Venta</th><th class="p-3 text-right"></th></tr></thead><tbody id="config-prod-list" class="divide-y divide-gray-100 text-slate-700"></tbody></table></div>
                         </div>
-
-                        <!-- 2. VENDEDORES -->
                         <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-200">
                             <h3 class="font-bold text-slate-800 mb-4 md:mb-6 flex items-center gap-2 text-xs uppercase tracking-widest border-b pb-4"><i class="fa-solid fa-users text-indigo-500"></i> Vendedores</h3>
                             <div class="bg-slate-50 p-4 md:p-5 rounded-xl mb-4 border border-slate-100 flex flex-col md:flex-row gap-3">
-                                <input type="text" id="new-seller-name" placeholder="Nombre" class="flex-grow border border-gray-200 bg-white rounded-lg px-3 py-2 text-sm outline-none">
-                                <div class="flex gap-2">
-                                    <input type="tel" id="new-seller-phone" placeholder="Celular" class="w-32 border border-gray-200 bg-white rounded-lg px-3 py-2 text-sm outline-none">
-                                    <button onclick="addSeller()" class="bg-slate-800 text-white px-4 rounded-lg font-bold text-sm shadow-md">Crear</button>
-                                </div>
+                                <input type="text" id="new-seller-name" placeholder="Nombre" class="flex-grow border border-gray-200 bg-white rounded-lg px-3 py-2 text-sm outline-none"><div class="flex gap-2"><input type="tel" id="new-seller-phone" placeholder="Celular" class="w-32 border border-gray-200 bg-white rounded-lg px-3 py-2 text-sm outline-none"><button onclick="addSeller()" class="bg-slate-800 text-white px-4 rounded-lg font-bold text-sm shadow-md">Crear</button></div>
                             </div>
                             <div class="overflow-y-auto max-h-[300px] pr-1"><ul id="config-seller-list" class="space-y-2"></ul></div>
                         </div>
-
-                        <!-- 3. DISTRIBUCIÓN -->
-                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-200">
-                            <h3 class="font-bold text-slate-800 mb-4 md:mb-6 flex items-center gap-2 text-xs uppercase tracking-widest border-b pb-4"><i class="fa-solid fa-percent text-indigo-500"></i> Distribución</h3>
-                            <div class="space-y-4">
-                                <div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Admin: <span id="display-admin-pct" class="text-indigo-600 font-black">60%</span></label><input type="range" id="range-admin" min="0" max="100" value="60" oninput="updateConfigRange('admin')" class="w-full h-2 bg-slate-200 rounded-lg accent-indigo-600"></div>
-                                <div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Vendedor: <span id="display-seller-pct" class="text-emerald-600 font-black">40%</span></label><input type="range" id="range-seller" min="0" max="100" value="40" oninput="updateConfigRange('seller')" class="w-full h-2 bg-slate-200 rounded-lg accent-emerald-500"></div>
-                                <button onclick="saveConfigPercentages()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase hover:bg-black transition shadow-lg tracking-widest">Guardar Cambios</button>
-                            </div>
-                        </div>
+                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-200"><h3 class="font-bold text-slate-800 mb-4 md:mb-6 flex items-center gap-2 text-xs uppercase tracking-widest border-b pb-4"><i class="fa-solid fa-percent text-indigo-500"></i> Distribución</h3><div class="space-y-4"><div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Admin: <span id="display-admin-pct" class="text-indigo-600 font-black">60%</span></label><input type="range" id="range-admin" min="0" max="100" value="60" oninput="updateConfigRange('admin')" class="w-full h-2 bg-slate-200 rounded-lg accent-indigo-600"></div><div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Vendedor: <span id="display-seller-pct" class="text-emerald-600 font-black">40%</span></label><input type="range" id="range-seller" min="0" max="100" value="40" oninput="updateConfigRange('seller')" class="w-full h-2 bg-slate-200 rounded-lg accent-emerald-500"></div><button onclick="saveConfigPercentages()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase hover:bg-black transition shadow-lg tracking-widest">Guardar Cambios</button></div></div>
                     </div>
                 </div>
 
@@ -275,20 +230,78 @@
         function saveData() { localStorage.setItem('kgb_db_v4', JSON.stringify(DB)); }
         function hardReset() { if(confirm("¡PELIGRO! ¿Borrar todo?")) { localStorage.removeItem('kgb_db_v4'); location.reload(); } }
         
-        // Sidebar Toggle with State Class Logic
+        // --- SIDEBAR TOGGLE LOGIC (FIXED) ---
+        let isMenuOpen = window.innerWidth >= 768; // Start open on PC
+
         function toggleSidebar() {
-            const sb = document.getElementById('sidebar');
-            const ov = document.getElementById('mobile-overlay');
-            if(sb.classList.contains('mobile-menu-open')) {
-                sb.classList.remove('mobile-menu-open');
-                ov.classList.add('hidden');
+            const sidebar = document.getElementById('sidebar');
+            const main = document.getElementById('main-content');
+            const btnIcon = document.getElementById('toggle-icon');
+            const btn = document.getElementById('toggle-btn');
+            const overlay = document.getElementById('mobile-overlay');
+            const isMobile = window.innerWidth < 768;
+
+            if (isMenuOpen) {
+                // CLOSE
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0'); // Explicit remove for mobile override
+                
+                if (!isMobile) {
+                    main.classList.remove('md:ml-64');
+                    main.classList.add('ml-0');
+                    btn.style.left = "0px";
+                } else {
+                    overlay.classList.add('hidden');
+                }
+                
+                btnIcon.classList.remove('fa-chevron-left');
+                btnIcon.classList.add('fa-chevron-right');
+                
             } else {
-                sb.classList.add('mobile-menu-open');
-                ov.classList.remove('hidden');
+                // OPEN
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0');
+                
+                if (!isMobile) {
+                    main.classList.add('md:ml-64');
+                    main.classList.remove('ml-0');
+                    btn.style.left = "16rem"; // 64 * 0.25rem = 16rem
+                } else {
+                    overlay.classList.remove('hidden');
+                }
+
+                btnIcon.classList.remove('fa-chevron-right');
+                btnIcon.classList.add('fa-chevron-left');
+            }
+            isMenuOpen = !isMenuOpen;
+        }
+
+        // Init State based on screen
+        function initLayout() {
+            const isMobile = window.innerWidth < 768;
+            const sidebar = document.getElementById('sidebar');
+            const btn = document.getElementById('toggle-btn');
+            const main = document.getElementById('main-content');
+
+            if(isMobile) {
+                // Mobile: Force closed initially
+                isMenuOpen = false;
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0');
+                btn.style.display = 'none'; // Hide toggle button on mobile (use hamburger)
+            } else {
+                // PC: Force open initially
+                isMenuOpen = true;
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0');
+                main.classList.add('md:ml-64');
+                btn.style.left = "16rem";
+                btn.style.display = 'flex';
             }
         }
 
         function initApp() {
+            initLayout();
             renderPosSelects(); renderFilterSeller(); renderSellerList(); renderProductList(); loadConfigUI(); updatePosCalc();
             document.getElementById('pos-id').innerText = '#' + Math.floor(Math.random()*10000);
         }
@@ -300,14 +313,7 @@
             document.getElementById('nav-'+t).classList.add('active','bg-indigo-700','text-white','font-bold','shadow-lg');
             if(t==='history'){renderFilterSeller();renderHistoryTable();}
             if(t==='dashboard')updateDashboard();
-            
-            // Auto-close sidebar on mobile only
-            const sb = document.getElementById('sidebar');
-            const ov = document.getElementById('mobile-overlay');
-            if(sb.classList.contains('mobile-menu-open')) {
-                sb.classList.remove('mobile-menu-open');
-                ov.classList.add('hidden');
-            }
+            if(window.innerWidth < 768 && isMenuOpen) toggleSidebar(); // Auto-close on mobile selection
         }
         function showToast(m){const t=document.getElementById('toast');t.querySelector('p').innerText=m;t.classList.remove('translate-y-40');setTimeout(()=>t.classList.add('translate-y-40'),3000);}
 
@@ -418,8 +424,6 @@
             document.getElementById('dash-total').innerText='S/ '+t.toFixed(2); document.getElementById('dash-admin').innerText='S/ '+a.toFixed(2); document.getElementById('dash-seller').innerText='S/ '+s.toFixed(2); document.getElementById('dash-count').innerText=c;
             const ctxS=document.getElementById('chartSellers').getContext('2d'); new Chart(ctxS,{type:'bar',data:{labels:Object.keys(ss),datasets:[{label:'Comisión',data:Object.values(ss),backgroundColor:'#4f46e5',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
         }
-
-        function copyCode(){ navigator.clipboard.writeText(document.getElementById('backend-code').innerText); showToast("Copiado"); }
 
         window.onload = initApp;
     </script>
