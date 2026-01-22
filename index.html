@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KGB STREAMING v4.6 | Menu Fixed</title>
+    <title>KGB STREAMING v5.3 | Logo Ready</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -16,145 +16,152 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Montserrat', sans-serif; background-color: #f1f5f9; overflow: hidden; }
-        
-        /* TRANSICIONES CLAVE */
-        .sidebar-transition { transition: transform 0.3s ease-in-out; }
-        .content-transition { transition: margin-left 0.3s ease-in-out; }
-        .btn-transition { transition: left 0.3s ease-in-out; }
-
-        /* Estilos específicos */
+        body { font-family: 'Montserrat', sans-serif; background-color: #f1f5f9; }
         .nav-item.active { background-color: #4338ca; color: white; border-left: 4px solid #a5b4fc; }
-        .refunded-row { background-color: #fee2e2 !important; }
-        .refunded-text { color: #991b1b !important; text-decoration: line-through; opacity: 0.6; }
-        
+        .refunded-row { background-color: #fee2e2 !important; color: #991b1b !important; text-decoration: line-through; opacity: 0.6; }
+        .mobile-sidebar { transition: transform 0.3s ease-in-out; }
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     </style>
 </head>
-<body class="flex flex-col h-screen text-slate-800 bg-slate-50">
+<body class="flex h-screen overflow-hidden bg-slate-50 text-slate-800">
 
-    <!-- Header -->
-    <header class="bg-white border-b border-gray-200 shadow-sm z-30 h-16 flex-shrink-0 flex items-center justify-between px-4 w-full relative">
-        <div class="flex items-center gap-3">
-            <!-- Logo -->
-            <div class="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center text-indigo-500 font-bold text-lg shadow-lg border border-slate-700">
-                <i class="fa-solid fa-play"></i>
-            </div>
-            <div>
-                <h1 class="text-lg md:text-2xl font-black text-slate-900 tracking-tighter leading-none uppercase">
-                    KGB <span class="text-indigo-600">STREAMING</span>
-                </h1>
-                <p class="text-[9px] text-slate-400 font-bold tracking-widest uppercase hidden sm:block">Sistema v4.6</p>
-            </div>
-        </div>
+    <!-- OVERLAY MÓVIL -->
+    <div id="mobile-overlay" onclick="closeMobileMenu()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden glass transition-opacity"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="mobile-sidebar fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-300 flex flex-col shadow-2xl transform -translate-x-full md:translate-x-0 md:static md:h-screen">
         
-        <div class="flex items-center gap-2">
-            <button onclick="switchMainTab('app')" class="px-3 py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded bg-slate-900 text-white shadow hover:bg-slate-800 transition">
-                <i class="fa-solid fa-desktop mr-2 hidden md:inline"></i> Panel
-            </button>
-            <button onclick="hardReset()" class="text-[10px] text-red-300 hover:text-red-500 font-bold uppercase tracking-widest ml-2">Reset</button>
+        <!-- Header Móvil del Sidebar (Solo visible al abrir menú en celular) -->
+        <div class="flex justify-between items-center p-4 md:hidden border-b border-slate-800">
+            <span class="font-bold text-white text-xs uppercase tracking-widest">Menú Principal</span>
+            <button onclick="closeMobileMenu()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
         </div>
-    </header>
 
-    <!-- Main Body -->
-    <div class="flex-1 relative flex overflow-hidden w-full">
-        
-        <!-- SIDEBAR -->
-        <!-- Nota: Ya no usamos md:translate-x-0. El estado se controla 100% por JS -->
-        <aside id="sidebar" class="sidebar-transition fixed inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col z-40 shadow-2xl border-r border-slate-800 transform translate-x-0 mt-16 h-[calc(100vh-4rem)]">
-            <div class="p-6">
-                <div class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-6">Navegación</div>
-                <nav class="space-y-2">
-                    <button onclick="switchAppTab('pos')" id="nav-pos" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition active bg-indigo-700 text-white font-bold shadow-lg">
-                        <i class="fa-solid fa-cart-shopping w-5 mr-3"></i> <span>Venta Nueva</span>
-                    </button>
-                    <button onclick="switchAppTab('history')" id="nav-history" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                        <i class="fa-solid fa-list-check w-5 mr-3"></i> <span>Historial</span>
-                    </button>
-                    <button onclick="switchAppTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                        <i class="fa-solid fa-chart-pie w-5 mr-3"></i> <span>Reportes</span>
-                    </button>
-                    <button onclick="switchAppTab('config')" id="nav-config" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition text-slate-400 hover:text-white">
-                        <i class="fa-solid fa-sliders w-5 mr-3"></i> <span>Configuración</span>
-                    </button>
-                </nav>
-            </div>
-            <div class="mt-auto p-5 bg-black/20 border-t border-slate-800 text-center">
-                <p class="text-xs text-slate-500 font-bold">Local DB</p>
-                <p class="text-sm font-extrabold text-indigo-400 mt-0.5">José Vizcarra</p>
-            </div>
-        </aside>
+        <!-- ========================================== -->
+        <!-- ZONA DEL LOGO (MODIFICADO PARA TI)         -->
+        <!-- ========================================== -->
+        <div class="h-32 flex items-center justify-center border-b border-slate-800 p-4 hidden md:flex bg-slate-950">
+            <!-- 
+                 INSTRUCCIONES PARA TU LOGO:
+                 1. Borra la URL actual dentro de src="..."
+                 2. Pon el nombre de tu archivo (ej: "logo.png") o una URL de internet.
+                 3. Si tu logo es oscuro, asegúrate de que tenga fondo transparente o blanco.
+            -->
+            <img src="https://via.placeholder.com/200x80/0f172a/ffffff?text=TU+LOGO+AQUI" 
+                 alt="Logo Empresa" 
+                 class="max-h-20 w-auto object-contain hover:opacity-90 transition cursor-pointer"
+                 title="Espacio reservado para el logo de la empresa">
+        </div>
+        <!-- ========================================== -->
 
-        <!-- TOGGLE BUTTON (PESTAÑA FLOTANTE) -->
-        <button id="toggle-btn" onclick="toggleMenu()" class="btn-transition fixed top-1/2 left-64 z-50 w-6 h-12 bg-indigo-600 rounded-r-lg shadow-xl text-white flex items-center justify-center hover:bg-indigo-500 hover:w-8 cursor-pointer border-y border-r border-indigo-400 transform -translate-y-1/2">
-            <i class="fa-solid fa-chevron-left text-xs" id="toggle-icon"></i>
-        </button>
-
-        <!-- MAIN CONTENT AREA -->
-        <main id="main-content" class="content-transition flex-1 bg-slate-50 overflow-y-auto p-4 md:p-8 relative w-full ml-64">
+        <!-- Navegación -->
+        <div class="flex-1 overflow-y-auto px-4 py-6 space-y-3">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">Operaciones</div>
             
-            <!-- LIVE APP VIEWS -->
-            <div id="view-app" class="flex flex-col gap-6">
+            <button onclick="switchAppTab('pos')" id="nav-pos" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition active bg-indigo-700 text-white font-bold shadow-lg group">
+                <i class="fa-solid fa-cart-shopping w-5 mr-3 group-hover:scale-110 transition"></i> <span>Venta Nueva</span>
+            </button>
+            <button onclick="switchAppTab('history')" id="nav-history" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition group">
+                <i class="fa-solid fa-list-check w-5 mr-3 group-hover:scale-110 transition"></i> <span>Historial</span>
+            </button>
+            
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2 mt-6">Administración</div>
+            
+            <button onclick="switchAppTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition group">
+                <i class="fa-solid fa-chart-pie w-5 mr-3 group-hover:scale-110 transition"></i> <span>Reportes</span>
+            </button>
+            <button onclick="switchAppTab('config')" id="nav-config" class="nav-item w-full flex items-center px-4 py-3.5 rounded-xl hover:bg-slate-800 transition text-slate-400 hover:text-white group">
+                <i class="fa-solid fa-sliders w-5 mr-3 group-hover:scale-110 transition"></i> <span>Configuración</span>
+            </button>
+        </div>
+
+        <div class="p-5 bg-black/20 border-t border-slate-800 text-center text-xs">
+            <p class="font-bold text-slate-500">Sistema v5.3</p>
+            <p class="text-indigo-400 font-bold mt-1">José Vizcarra</p>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <!-- HEADER MÓVIL (Top Bar) -->
+        <header class="bg-white h-16 border-b border-gray-200 flex items-center justify-between px-4 md:hidden flex-shrink-0 z-40">
+            <div class="flex items-center gap-3">
+                <button onclick="openMobileMenu()" class="text-slate-700 p-2 rounded hover:bg-slate-100 transition">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <!-- Logo Texto Pequeño para Móvil (Opcional: Puedes poner img aquí también) -->
+                <h1 class="text-lg font-black text-slate-900 tracking-tight">KGB <span class="text-indigo-600">STREAMING</span></h1>
+            </div>
+        </header>
+
+        <!-- MAIN SCROLLABLE AREA -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50">
+            
+            <!-- BLUEPRINT (Hidden) -->
+            <div id="view-blueprint" class="hidden"></div>
+
+            <!-- APP VIEWS -->
+            <div id="view-app" class="max-w-6xl mx-auto">
                 
                 <!-- 1. POS -->
-                <div id="tab-pos" class="app-tab max-w-4xl mx-auto w-full">
+                <div id="tab-pos" class="app-tab w-full max-w-3xl mx-auto">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                         <div class="p-5 border-b border-gray-100 flex justify-between items-center">
-                            <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-cash-register text-indigo-600"></i> REGISTRAR</h2>
-                            <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded">ID: <span id="pos-id">#--</span></span>
+                            <h2 class="text-lg font-black text-slate-800 flex gap-2"><i class="fa-solid fa-cash-register text-indigo-600"></i> REGISTRAR</h2>
+                            <span class="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-1 rounded">ID: <span id="pos-id">#--</span></span>
                         </div>
                         <div class="p-6 md:p-8 space-y-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div><label class="text-xs font-bold text-slate-500 uppercase block mb-2">Vendedor</label><select id="pos-seller" class="w-full border p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500"></select></div>
-                                <div><label class="text-xs font-bold text-slate-500 uppercase block mb-2">Plataforma</label><select id="pos-product" onchange="updatePosCalc()" class="w-full border p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500"></select></div>
+                                <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Vendedor</label><select id="pos-seller" class="w-full border p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 bg-white"></select></div>
+                                <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Plataforma</label><select id="pos-product" onchange="updatePosCalc()" class="w-full border p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 bg-white"></select></div>
                             </div>
-                            <div class="bg-slate-900 rounded-2xl p-6 shadow-xl text-white grid grid-cols-3 gap-2 text-center relative overflow-hidden">
-                                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-600 rounded-full filter blur-[50px] opacity-30 -mr-10 -mt-10"></div>
-                                <div class="relative z-10">
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">COSTO</p>
-                                    <input id="pos-cost" readonly class="w-full bg-transparent text-center font-mono text-lg font-bold outline-none text-slate-400" value="0.00">
-                                </div>
-                                <div class="relative z-10 border-x border-slate-700">
-                                    <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mb-1">VENTA</p>
-                                    <div class="flex justify-center items-center"><span class="text-sm mr-1">S/</span><input id="pos-price" type="number" oninput="reCalcProfitOnly()" class="w-16 bg-transparent text-center font-mono text-2xl font-bold outline-none" value="0.00"></div>
-                                </div>
-                                <div class="relative z-10">
-                                    <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mb-1">GANANCIA</p>
-                                    <p id="pos-profit" class="font-mono text-xl font-bold text-emerald-400 mt-1">0.00</p>
+                            
+                            <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-lg relative overflow-hidden group">
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-600 rounded-full filter blur-[50px] opacity-30 -mr-10 -mt-10 group-hover:opacity-40 transition duration-1000"></div>
+                                <div class="grid grid-cols-3 gap-2 text-center relative z-10">
+                                    <div><p class="text-[9px] text-slate-400 font-bold uppercase mb-1">COSTO</p><input id="pos-cost" readonly class="w-full bg-transparent text-center font-mono text-lg font-bold text-slate-400 outline-none" value="0.00"></div>
+                                    <div class="border-x border-slate-700"><p class="text-[9px] text-indigo-400 font-bold uppercase mb-1">VENTA</p><input id="pos-price" type="number" oninput="reCalcProfitOnly()" class="w-full bg-transparent text-center font-mono text-2xl font-bold text-white outline-none focus:text-indigo-300 transition" value="0.00"></div>
+                                    <div><p class="text-[9px] text-emerald-400 font-bold uppercase mb-1">GANANCIA</p><p id="pos-profit" class="font-mono text-xl font-bold text-emerald-400 mt-1">0.00</p></div>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <input type="text" id="pos-client" placeholder="Cliente" class="border p-3 rounded-xl text-sm outline-none w-full">
-                                <input type="tel" id="pos-phone" placeholder="Teléfono" class="border p-3 rounded-xl text-sm outline-none w-full">
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input type="text" id="pos-client" placeholder="Nombre Cliente" class="border p-3 rounded-xl text-sm w-full outline-none focus:border-indigo-500 transition">
+                                <input type="tel" id="pos-phone" placeholder="Teléfono / WPP" class="border p-3 rounded-xl text-sm w-full outline-none focus:border-indigo-500 transition">
                             </div>
-                            <button onclick="submitSale()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition uppercase tracking-widest text-sm">Confirmar Venta</button>
+                            <button onclick="submitSale()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition text-sm uppercase tracking-widest active:scale-[0.98]">Confirmar Venta</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- 2. HISTORY -->
-                <div id="tab-history" class="app-tab hidden max-w-7xl mx-auto w-full">
-                    <h2 class="text-xl font-black text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-list-check text-indigo-500"></i> Historial</h2>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6 grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
-                        <div><label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Desde</label><input type="date" id="filter-start" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-sm outline-none"></div>
-                        <div><label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Hasta</label><input type="date" id="filter-end" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-sm outline-none"></div>
-                        <div class="col-span-2 md:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Vendedor</label><select id="filter-seller" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-sm outline-none"></select></div>
-                        <button onclick="exportToExcel()" class="col-span-2 md:col-span-1 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold shadow text-sm flex justify-center items-center gap-2"><i class="fa-solid fa-file-excel"></i> Excel</button>
+                <div id="tab-history" class="app-tab hidden w-full">
+                    <h2 class="text-xl font-black text-slate-800 mb-4 flex gap-2 items-center"><i class="fa-solid fa-list-check text-indigo-500"></i> Historial</h2>
+                    
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
+                            <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Desde</label><input type="date" id="filter-start" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs focus:border-indigo-500 outline-none"></div>
+                            <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Hasta</label><input type="date" id="filter-end" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs focus:border-indigo-500 outline-none"></div>
+                            <div class="col-span-2 md:col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Vendedor</label><select id="filter-seller" onchange="renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs focus:border-indigo-500 outline-none"></select></div>
+                            <button onclick="exportToExcel()" class="col-span-2 md:col-span-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold shadow flex justify-center items-center gap-2 text-xs h-[34px] transition"><i class="fa-solid fa-file-excel"></i> Exportar</button>
+                        </div>
                     </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border overflow-hidden h-[500px]">
-                            <div class="overflow-auto h-full">
-                                <table class="w-full text-sm text-left">
-                                    <thead class="bg-slate-50 text-slate-500 font-bold text-[10px] uppercase sticky top-0 z-10"><tr><th class="p-4">Detalle</th><th class="p-4">Cliente</th><th class="p-4 text-right">Comisión</th><th class="p-4 text-center">Acción</th></tr></thead>
+                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col h-[500px]">
+                            <div class="overflow-x-auto flex-1">
+                                <table class="w-full text-sm text-left whitespace-nowrap">
+                                    <thead class="bg-slate-50 text-xs text-slate-500 uppercase sticky top-0 z-10 font-bold"><tr><th class="p-4">Detalle</th><th class="p-4">Cliente</th><th class="p-4 text-right">Comisión</th><th class="p-4 text-center">Acción</th></tr></thead>
                                     <tbody id="history-table-body" class="divide-y divide-gray-100"></tbody>
                                 </table>
                             </div>
                         </div>
                         <div class="lg:col-span-1">
-                            <div class="bg-slate-900 text-white p-6 rounded-3xl shadow-xl sticky top-0">
-                                <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-wallet text-indigo-400"></i> Caja Real</h3>
+                            <div class="bg-slate-900 text-white p-6 rounded-3xl shadow-xl sticky top-0 h-fit">
+                                <h3 class="font-bold text-base mb-4 flex gap-2"><i class="fa-solid fa-wallet text-indigo-400"></i> Caja Real</h3>
                                 <div class="space-y-3 mb-6 border-b border-slate-700 pb-4">
                                     <div class="flex justify-between"><span class="text-slate-400 text-xs">Ventas</span><span class="font-mono font-bold" id="liq-total">0.00</span></div>
                                     <div class="flex justify-between"><span class="text-slate-400 text-xs">Ops</span><span class="font-mono font-bold" id="liq-count">0</span></div>
@@ -166,33 +173,33 @@
                     </div>
                 </div>
 
-                <!-- 3. CONFIG -->
-                <div id="tab-config" class="app-tab hidden max-w-4xl mx-auto pb-10 w-full">
+                <!-- 3. CONFIGURATION -->
+                <div id="tab-config" class="app-tab hidden w-full pb-20">
                     <h2 class="text-xl font-black text-slate-800 mb-6">CONFIGURACIÓN</h2>
                     <div class="flex flex-col gap-6">
+                        <!-- Plataformas -->
                         <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                            <h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2">Plataformas</h3>
-                            <div class="flex gap-2 mb-4"><input type="text" id="new-prod-name" placeholder="Nombre" class="flex-1 border rounded-lg px-3 py-2 text-sm outline-none"><input type="number" id="new-prod-cost" placeholder="Costo" class="w-20 border rounded-lg px-2 py-2 text-sm text-center"><input type="number" id="new-prod-price" placeholder="Venta" class="w-20 border rounded-lg px-2 py-2 text-sm text-center"><button onclick="addProduct()" class="bg-indigo-600 text-white px-3 rounded-lg"><i class="fa-solid fa-plus"></i></button></div>
-                            <div class="overflow-y-auto max-h-60 border rounded-xl"><table class="w-full text-sm text-left"><tbody id="config-prod-list" class="divide-y divide-gray-100"></tbody></table></div>
+                            <h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2">1. Plataformas</h3>
+                            <div class="bg-indigo-50 p-4 rounded-xl mb-4 border border-indigo-100 flex gap-2">
+                                <input type="text" id="new-prod-name" placeholder="Nombre" class="flex-grow border rounded-lg px-3 py-2 text-sm outline-none"><input type="number" id="new-prod-cost" placeholder="Costo" class="w-16 border rounded-lg px-2 py-2 text-sm text-center"><input type="number" id="new-prod-price" placeholder="Venta" class="w-16 border rounded-lg px-2 py-2 text-sm text-center"><button onclick="addProduct()" class="bg-indigo-600 text-white px-3 rounded-lg font-bold text-sm hover:bg-indigo-700 transition">+</button>
+                            </div>
+                            <div class="overflow-y-auto max-h-60 border rounded-xl"><table class="w-full text-sm text-left"><tbody id="config-prod-list" class="divide-y divide-gray-100 text-slate-700"></tbody></table></div>
                         </div>
+                        <!-- Vendedores -->
                         <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                            <h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2">Vendedores</h3>
-                            <div class="flex gap-2 mb-4"><input type="text" id="new-seller-name" placeholder="Nombre" class="flex-1 border rounded-lg px-3 py-2 text-sm outline-none"><input type="tel" id="new-seller-phone" placeholder="Celular" class="w-32 border rounded-lg px-3 py-2 text-sm outline-none"><button onclick="addSeller()" class="bg-slate-800 text-white px-3 rounded-lg"><i class="fa-solid fa-plus"></i></button></div>
+                            <h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2">2. Vendedores</h3>
+                            <div class="bg-slate-50 p-4 rounded-xl mb-4 border border-slate-100 flex gap-2">
+                                <input type="text" id="new-seller-name" placeholder="Nombre" class="flex-grow border rounded-lg px-3 py-2 text-sm outline-none"><input type="tel" id="new-seller-phone" placeholder="Celular" class="w-24 border rounded-lg px-3 py-2 text-sm outline-none"><button onclick="addSeller()" class="bg-slate-800 text-white px-3 rounded-lg font-bold text-sm hover:bg-slate-900 transition">+</button>
+                            </div>
                             <div class="overflow-y-auto max-h-60"><ul id="config-seller-list" class="space-y-2"></ul></div>
                         </div>
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                            <h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2">Distribución</h3>
-                            <div class="space-y-4">
-                                <div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Admin: <span id="display-admin-pct" class="text-indigo-600">60%</span></label><input type="range" id="range-admin" min="0" max="100" value="60" oninput="updateConfigRange('admin')" class="w-full h-1.5 bg-slate-200 rounded-lg accent-indigo-600"></div>
-                                <div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Vendedor: <span id="display-seller-pct" class="text-emerald-600">40%</span></label><input type="range" id="range-seller" min="0" max="100" value="40" oninput="updateConfigRange('seller')" class="w-full h-1.5 bg-slate-200 rounded-lg accent-emerald-500"></div>
-                                <button onclick="saveConfigPercentages()" class="w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest">Guardar</button>
-                            </div>
-                        </div>
+                        <!-- Distribucion -->
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200"><h3 class="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest border-b pb-2">3. Distribución</h3><div class="space-y-4"><div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Admin: <span id="display-admin-pct" class="text-indigo-600">60%</span></label><input type="range" id="range-admin" min="0" max="100" value="60" oninput="updateConfigRange('admin')" class="w-full h-1.5 bg-slate-200 rounded-lg accent-indigo-600"></div><div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Vendedor: <span id="display-seller-pct" class="text-emerald-600">40%</span></label><input type="range" id="range-seller" min="0" max="100" value="40" oninput="updateConfigRange('seller')" class="w-full h-1.5 bg-slate-200 rounded-lg accent-emerald-500"></div><button onclick="saveConfigPercentages()" class="w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-black transition">Guardar</button></div></div>
                     </div>
                 </div>
 
                 <!-- 4. DASHBOARD -->
-                <div id="tab-dashboard" class="app-tab hidden max-w-6xl mx-auto w-full">
+                <div id="tab-dashboard" class="app-tab hidden w-full">
                     <h2 class="text-xl font-black text-slate-800 mb-6">REPORTES</h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                         <div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[10px] text-slate-400 font-bold uppercase">Ventas</p><p id="dash-total" class="text-xl font-black text-slate-800">0.00</p></div>
@@ -200,14 +207,15 @@
                         <div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[10px] text-emerald-500 font-bold uppercase">Comisiones</p><p id="dash-seller" class="text-xl font-black text-emerald-600">0.00</p></div>
                         <div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[10px] text-slate-400 font-bold uppercase">Ops</p><p id="dash-count" class="text-xl font-black text-slate-800">0</p></div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl border shadow-sm h-64"><canvas id="chartSellers"></canvas></div>
+                    <div class="bg-white p-4 rounded-2xl border shadow-sm h-64 md:h-96 w-full"><canvas id="chartSellers"></canvas></div>
                 </div>
 
             </div>
         </main>
     </div>
 
-    <!-- Toast -->
+    <!-- Modals -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4"><div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl transform scale-100 transition"><h3 class="text-lg font-bold text-slate-800 mb-2">Confirmar</h3><p class="text-sm text-slate-500 mb-6">¿Estás seguro de esta acción?</p><div class="flex justify-end gap-3"><button onclick="closeConfirm()" class="px-4 py-2 text-slate-600 font-bold text-sm hover:bg-slate-100 rounded-lg">Cancelar</button><button id="btn-do-action" class="px-4 py-2 bg-red-600 text-white font-bold text-sm hover:bg-red-700 rounded-lg shadow-md">Confirmar</button></div></div></div>
     <div id="toast" class="fixed bottom-8 right-1/2 translate-x-1/2 md:translate-x-0 md:right-8 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl translate-y-40 transition-transform duration-500 z-50 flex items-center gap-3 whitespace-nowrap"><div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white"><i class="fa-solid fa-check text-xs"></i></div><p class="text-xs md:text-sm font-bold">¡Hecho!</p></div>
 
     <script>
@@ -215,82 +223,28 @@
         const defaultData={config:{adminPct:0.60,sellerPct:0.40},sellers:[],products:[],sales:[]};
         let DB=JSON.parse(localStorage.getItem('kgb_db_v4'))||defaultData;
         function saveData(){localStorage.setItem('kgb_db_v4',JSON.stringify(DB));}
-        function hardReset(){if(confirm("¿Borrar todo?")){localStorage.removeItem('kgb_db_v4');location.reload();}}
 
-        // --- MENU TOGGLE LOGIC (FIXED) ---
-        let isMenuOpen = true; // Default State
-
-        function initLayout() {
-            const width = window.innerWidth;
-            const sidebar = document.getElementById('sidebar');
-            const main = document.getElementById('main-content');
-            const btn = document.getElementById('toggle-btn');
-            
-            if(width < 768) { // Mobile
-                isMenuOpen = false;
-                sidebar.classList.add('-translate-x-full');
-                sidebar.classList.remove('translate-x-0');
-                main.style.marginLeft = "0px";
-                btn.style.left = "0px";
-                btn.classList.add('hidden'); // Hide tab on mobile, use hamburger
-            } else { // Desktop
-                isMenuOpen = true;
-                sidebar.classList.remove('-translate-x-full');
-                sidebar.classList.add('translate-x-0');
-                main.style.marginLeft = "16rem"; // 256px
-                btn.style.left = "16rem";
-                btn.classList.remove('hidden');
-                document.getElementById('toggle-icon').classList.replace('fa-chevron-right', 'fa-chevron-left');
-            }
+        // --- MENU LOGIC ---
+        function openMobileMenu() {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('mobile-overlay');
+            sb.classList.remove('-translate-x-full');
+            ov.classList.remove('hidden');
         }
-
-        function toggleMenu() { // Desktop Toggle Tab
-            const sidebar = document.getElementById('sidebar');
-            const main = document.getElementById('main-content');
-            const btn = document.getElementById('toggle-btn');
-            const icon = document.getElementById('toggle-icon');
-
-            if(isMenuOpen) {
-                // Close
-                sidebar.classList.add('-translate-x-full');
-                sidebar.classList.remove('translate-x-0');
-                main.style.marginLeft = "0px";
-                btn.style.left = "0px";
-                icon.classList.replace('fa-chevron-left', 'fa-chevron-right');
-            } else {
-                // Open
-                sidebar.classList.remove('-translate-x-full');
-                sidebar.classList.add('translate-x-0');
-                main.style.marginLeft = "16rem";
-                btn.style.left = "16rem";
-                icon.classList.replace('fa-chevron-right', 'fa-chevron-left');
-            }
-            isMenuOpen = !isMenuOpen;
-        }
-
-        function toggleSidebar() { // Mobile Hamburger
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobile-overlay');
-            
-            // On mobile, we just check class presence for simplicity
-            if(sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                sidebar.classList.add('translate-x-0');
-                overlay.classList.remove('hidden');
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                sidebar.classList.remove('translate-x-0');
-                overlay.classList.add('hidden');
-            }
+        function closeMobileMenu() {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('mobile-overlay');
+            sb.classList.add('-translate-x-full');
+            ov.classList.add('hidden');
         }
 
         // --- APP LOGIC ---
-        function initApp(){ initLayout(); renderPosSelects(); renderFilterSeller(); renderSellerList(); renderProductList(); loadConfigUI(); updatePosCalc(); document.getElementById('pos-id').innerText='#'+Math.floor(Math.random()*10000); }
+        function initApp(){ renderPosSelects(); renderFilterSeller(); renderSellerList(); renderProductList(); loadConfigUI(); updatePosCalc(); document.getElementById('pos-id').innerText='#'+Math.floor(Math.random()*10000); }
         function switchAppTab(t){
             document.querySelectorAll('.app-tab').forEach(e=>e.classList.add('hidden')); document.getElementById('tab-'+t).classList.remove('hidden');
-            document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active','bg-indigo-700','text-white')); document.getElementById('nav-'+t).classList.add('active','bg-indigo-700','text-white');
+            document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active','bg-indigo-700','text-white','font-bold','shadow-lg')); document.getElementById('nav-'+t).classList.add('active','bg-indigo-700','text-white','font-bold','shadow-lg');
             if(t==='history'){renderFilterSeller();renderHistoryTable();} if(t==='dashboard')updateDashboard();
-            if(window.innerWidth<768) toggleSidebar(); // Auto-close on mobile
+            if(window.innerWidth<768) closeMobileMenu(); // Auto-close on mobile
         }
         function showToast(m){const t=document.getElementById('toast');t.querySelector('p').innerText=m;t.classList.remove('translate-y-40');setTimeout(()=>t.classList.add('translate-y-40'),3000);}
 
@@ -300,13 +254,13 @@
             const cs=s.value, cp=p.value;
             s.innerHTML=DB.sellers.map(x=>`<option value="${x.name}">${x.name}</option>`).join('');
             p.innerHTML='<option value="">Seleccione...</option>'+DB.products.map((x,i)=>`<option value="${i}">${x.name}</option>`).join('');
-            if(cs)s.value=cs; if(cp)p.value=cp;
+            if(cs)s.value=cs; if(cp && p.querySelector(`option[value="${cp}"]`)) p.value=cp;
         }
         function updatePosCalc(){
             const idx=document.getElementById('pos-product').value;
             if(idx===""){document.getElementById('pos-cost').value='0.00';document.getElementById('pos-price').value='0.00';document.getElementById('pos-profit').innerText='0.00';return;}
             const p=DB.products[idx]; document.getElementById('pos-cost').value=p.cost.toFixed(2);
-            let v=parseFloat(document.getElementById('pos-price').value); if(v===0||isNaN(v)){v=p.price;document.getElementById('pos-price').value=v.toFixed(2);}
+            let val=parseFloat(document.getElementById('pos-price').value); if(val===0||isNaN(val)){val=p.price;document.getElementById('pos-price').value=val.toFixed(2);}
             reCalcProfitOnly();
         }
         function reCalcProfitOnly(){const c=parseFloat(document.getElementById('pos-cost').value)||0;const p=parseFloat(document.getElementById('pos-price').value)||0;document.getElementById('pos-profit').innerText=(p-c).toFixed(2);}
@@ -326,28 +280,37 @@
             const d=getFilteredData(); let tc=0,ts=0,rc=0; d.forEach(x=>{if(x.status!=='refunded'){tc+=x.sellerComm;ts+=x.price;}else{rc++;}});
             document.getElementById('liq-comm').innerText='S/ '+tc.toFixed(2); document.getElementById('liq-total').innerText='S/ '+ts.toFixed(2); document.getElementById('liq-count').innerText=d.length-rc; document.getElementById('liq-refunds').innerText=rc;
             const b=document.getElementById('history-table-body'); b.innerHTML=d.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(s=>{
-                const isR=s.status==='refunded'; const safeV=JSON.stringify(`🎫 KGB STREAMING - REGISTRO\n---------------------------\n🆔 ID: #${s.id}\n📆 Fecha: ${new Date(s.date).toLocaleDateString()}\n👤 Vendedor: ${s.seller}\n📺 Plataforma: ${s.product}\n💰 TU COMISIÓN: S/ ${s.sellerComm.toFixed(2)}\n---------------------------\n✅ Su compra ha sido verificada en el sistema.`).replace(/"/g,'&quot;');
+                const isR=s.status==='refunded'; const safeV=JSON.stringify(`🎫 KGB STREAMING - REGISTRO\n---------------------------\n🆔 ID Transacción: #${s.id}\n📆 Fecha: ${new Date(s.date).toLocaleDateString()}\n👤 Vendedor: ${s.seller}\n📺 Plataforma: ${s.product}\n💰 TU COMISIÓN: S/ ${s.sellerComm.toFixed(2)}\n---------------------------\n✅ Su compra ha sido verificada en el sistema.`).replace(/"/g,'&quot;');
                 const safeS=JSON.stringify(s).replace(/"/g,'&quot;');
-                return `<tr class="border-b border-gray-100 transition group ${isR?'refunded-row':'hover:bg-slate-50'}"><td class="px-4 py-3 md:px-6 md:py-4 align-top ${isR?'refunded-text':''}"><div class="font-black text-indigo-900 text-xs md:text-sm uppercase">${s.product}</div><div class="flex gap-1 text-[10px] text-slate-500 font-medium"><span>${new Date(s.date).toLocaleDateString()}</span>-<span>${s.seller}</span></div></td><td class="px-4 py-3 align-top ${isR?'refunded-text':''}"><div class="font-bold text-slate-700 text-xs">${s.client||'-'}</div><div class="text-[10px] text-slate-400 font-mono">${s.phone||'--'}</div></td><td class="px-4 py-3 text-right align-middle">${isR?'<span class="text-[10px] font-bold text-red-800">0.00</span>':`<div class="font-black text-emerald-600 text-sm">S/ ${s.sellerComm.toFixed(2)}</div>`}</td><td class="px-4 py-3 text-center align-middle">${isR?'<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-[9px] font-bold">DEV</span>':`<div class="flex justify-center gap-2"><button onclick="act('ref',${s.id})" class="w-8 h-8 rounded border border-gray-200 text-red-400 hover:bg-red-50 flex items-center justify-center"><i class="fa-solid fa-rotate-left"></i></button><button onclick='cpy(${safeV})' class="w-8 h-8 rounded border border-gray-200 text-blue-500 hover:bg-blue-50 flex items-center justify-center"><i class="fa-regular fa-copy"></i></button><button onclick='wpp(${safeS})' class="w-8 h-8 rounded border border-gray-200 text-green-500 hover:bg-green-50 flex items-center justify-center"><i class="fa-brands fa-whatsapp font-bold"></i></button></div>`}</td></tr>`;
+                return `<tr class="border-b border-gray-100 transition group ${isR?'refunded-row':'hover:bg-slate-50'}"><td class="px-4 py-3 md:px-6 md:py-4 align-top ${isR?'refunded-text':''}"><div class="font-black text-indigo-900 text-xs md:text-sm uppercase">${s.product}</div><div class="flex gap-1 text-[10px] text-slate-500 font-medium"><span>${new Date(s.date).toLocaleDateString()}</span>-<span>${s.seller}</span></div></td><td class="px-4 py-3 align-top ${isR?'refunded-text':''}"><div class="font-bold text-slate-700 text-xs">${s.client||'-'}</div><div class="text-[10px] text-slate-400 font-mono">${s.phone||'--'}</div></td><td class="px-4 py-3 text-right align-middle">${isR?'<span class="text-[10px] font-bold text-red-800">0.00</span>':`<div class="font-black text-emerald-600 text-sm md:text-lg">S/ ${s.sellerComm.toFixed(2)}</div>`}</td><td class="px-4 py-3 text-center align-middle">${isR?'<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-[9px] font-bold">DEV</span>':`<div class="flex justify-center gap-2"><button onclick="act('ref',${s.id})" class="w-8 h-8 rounded border border-gray-200 text-red-400 hover:bg-red-50 flex items-center justify-center"><i class="fa-solid fa-rotate-left"></i></button><button onclick='cpy(${safeV})' class="w-8 h-8 rounded border border-gray-200 text-blue-500 hover:bg-blue-50 flex items-center justify-center"><i class="fa-regular fa-copy"></i></button><button onclick='wpp(${safeS})' class="w-8 h-8 rounded border border-gray-200 text-green-500 hover:bg-green-50 flex items-center justify-center"><i class="fa-brands fa-whatsapp font-bold"></i></button></div>`}</td></tr>`;
             }).join('');
         }
         function exportToExcel(){const d=getFilteredData();if(d.length===0)return alert("Sin datos");const ws=XLSX.utils.json_to_sheet(d.map(x=>({Fecha:x.date,Vendedor:x.seller,Producto:x.product,Comision:x.status==='refunded'?0:x.sellerComm,Estado:x.status})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Ventas");XLSX.writeFile(wb,"KGB_Reporte.xlsx");}
 
         // ACTIONS
         function cpy(t){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast("Copiado");}
-        function wpp(s){let p=s.sellerPhone;if(!p){const o=DB.sellers.find(x=>x.name===s.seller);if(o)p=o.phone;}if(!p)return alert("Sin teléfono");const t=`🎫 KGB STREAMING - REGISTRO\n---------------------------\n🆔 ID: #${s.id}\n📆 Fecha: ${new Date(s.date).toLocaleDateString()}\n👤 Vendedor: ${s.seller}\n📺 Plataforma: ${s.product}\n💰 TU COMISIÓN: S/ ${s.sellerComm.toFixed(2)}\n---------------------------\n✅ Su compra ha sido verificada en el sistema.`;window.open(`https://wa.me/${p}?text=${encodeURIComponent(t)}`,'_blank');}
-        function act(t,id){if(t==='ref'){if(confirm("¿Anular?")){const s=DB.sales.find(x=>x.id===id);if(s){s.status='refunded';saveData();renderHistoryTable();showToast("Anulado");}}} if(t==='delS'){if(confirm("¿Borrar?")){DB.sellers=DB.sellers.filter(x=>x.id!==id);saveData();renderSellerList();renderPosSelects();}} if(t==='delP'){if(confirm("¿Borrar?")){DB.products=DB.products.filter(x=>x.id!==id);saveData();renderProductList();renderPosSelects();}}}
+        function wpp(s){let p=s.sellerPhone;if(!p){const o=DB.sellers.find(x=>x.name===s.seller);if(o)p=o.phone;}if(!p)return alert("Sin teléfono");const t=`🎫 KGB STREAMING - REGISTRO\n---------------------------\n🆔 ID Transacción: #${s.id}\n📆 Fecha: ${new Date(s.date).toLocaleDateString()}\n👤 Vendedor: ${s.seller}\n📺 Plataforma: ${s.product}\n💰 TU COMISIÓN: S/ ${s.sellerComm.toFixed(2)}\n---------------------------\n✅ Su compra ha sido verificada en el sistema.`;window.open(`https://wa.me/${p}?text=${encodeURIComponent(t)}`,'_blank');}
+        let actId=null; let actType=''; function confirmAction(type, id) { actType=type; actId=id; document.getElementById('confirm-modal').classList.remove('hidden'); } function act(t,id){confirmAction(t==='ref'?'refund':t, id);} function closeConfirm(){document.getElementById('confirm-modal').classList.add('hidden');}
+        document.getElementById('btn-do-action').onclick=function(){
+            if(actType==='refund'){const s=DB.sales.find(x=>x.id===actId); if(s){s.status='refunded'; saveData(); showToast("Anulado"); renderHistoryTable();}}
+            if(actType==='del_seller'){DB.sellers=DB.sellers.filter(s=>s.id!==actId); saveData(); renderSellerList(); renderPosSelects(); showToast("Eliminado");}
+            if(actType==='del_prod'){DB.products=DB.products.filter(p=>p.id!==actId); saveData(); renderProductList(); renderPosSelects(); showToast("Eliminado");}
+            closeConfirm();
+        };
 
         // CONFIG
         function loadConfigUI(){document.getElementById('range-admin').value=DB.config.adminPct*100;document.getElementById('range-seller').value=DB.config.sellerPct*100;updateConfigRange('admin');renderSellerList();renderProductList();}
         function updateConfigRange(s){const a=document.getElementById('range-admin'),b=document.getElementById('range-seller');let v=parseInt(s==='admin'?a.value:b.value);if(s==='admin')b.value=100-v;else a.value=100-v;document.getElementById('display-admin-pct').innerText=a.value+'%';document.getElementById('display-seller-pct').innerText=b.value+'%';}
         function saveConfigPercentages(){DB.config.adminPct=document.getElementById('range-admin').value/100;DB.config.sellerPct=document.getElementById('range-seller').value/100;saveData();showToast("Guardado");updatePosCalc();}
-        function renderSellerList(){document.getElementById('config-seller-list').innerHTML=DB.sellers.map(s=>`<li class="flex justify-between items-center p-3 bg-slate-50 border rounded-lg text-sm"><div><span class="font-bold block">${s.name}</span><span class="text-xs text-slate-400">${s.phone||'--'}</span></div><button onclick="act('delS',${s.id})" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></li>`).join('');}
-        function addSeller(){const n=document.getElementById('new-seller-name').value,p=document.getElementById('new-seller-phone').value;if(n){DB.sellers.push({id:Date.now(),name:n,phone:p});document.getElementById('new-seller-name').value='';saveData();renderSellerList();renderPosSelects();showToast("Agregado");}}
-        function renderProductList(){document.getElementById('config-prod-list').innerHTML=DB.products.map(p=>`<tr class="border-b"><td class="p-3 font-bold">${p.name}</td><td class="p-3 text-center text-slate-500">${p.cost}</td><td class="p-3 text-center text-indigo-600 font-bold">${p.price}</td><td class="p-3 text-right"><button onclick="act('delP',${p.id})" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');}
+        function renderSellerList(){document.getElementById('config-seller-list').innerHTML=DB.sellers.map((s)=>`<li class="flex justify-between items-center p-3 bg-slate-50 border border-slate-100 rounded-lg text-sm group"><div><span class="font-bold text-slate-700 block">${s.name}</span><span class="text-xs text-slate-400 font-mono"><i class="fa-solid fa-phone mr-1"></i>${s.phone||'--'}</span></div><button onclick="act('del_seller',${s.id})" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></li>`).join('');}
+        function addSeller(){const n=document.getElementById('new-seller-name').value,p=document.getElementById('new-seller-phone').value;if(n){DB.sellers.push({id:Date.now(),name:n,phone:p});document.getElementById('new-seller-name').value='';document.getElementById('new-seller-phone').value='';saveData();renderSellerList();renderPosSelects();showToast("Agregado");}}
+        function renderProductList(){document.getElementById('config-prod-list').innerHTML=DB.products.map((p,i)=>`<tr class="border-b border-gray-50 hover:bg-slate-50 transition"><td class="p-3 font-bold text-slate-700">${p.name}</td><td class="p-3 text-slate-500 text-center">${p.cost}</td><td class="p-3 text-center text-indigo-600 font-bold">${p.price}</td><td class="p-3 text-right"><button onclick="act('del_prod',${p.id})" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');}
         function addProduct(){const n=document.getElementById('new-prod-name').value,c=parseFloat(document.getElementById('new-prod-cost').value),p=parseFloat(document.getElementById('new-prod-price').value);if(n&&c&&p){DB.products.push({id:Date.now(),name:n,cost:c,price:p});document.getElementById('new-prod-name').value='';saveData();renderProductList();renderPosSelects();showToast("Agregado");}}
 
         function updateDashboard(){let t=0,a=0,s=0,c=0,ss={};DB.sales.forEach(x=>{if(x.status!=='refunded'){t+=x.price;a+=x.admin;s+=x.sellerComm;c++;if(!ss[x.seller])ss[x.seller]=0;ss[x.seller]+=x.sellerComm;}});document.getElementById('dash-total').innerText=t.toFixed(2);document.getElementById('dash-admin').innerText=a.toFixed(2);document.getElementById('dash-seller').innerText=s.toFixed(2);document.getElementById('dash-count').innerText=c;const ctx=document.getElementById('chartSellers').getContext('2d');new Chart(ctx,{type:'bar',data:{labels:Object.keys(ss),datasets:[{label:'Comisión',data:Object.values(ss),backgroundColor:'#4f46e5',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});}
+
+        function switchMainTab(v){document.getElementById('view-blueprint').classList.add('hidden');document.getElementById('view-app').classList.add('hidden');if(v==='app'){document.getElementById('view-app').classList.remove('hidden');document.getElementById('view-app').classList.add('flex');initApp();}else{document.getElementById('view-blueprint').classList.remove('hidden');}}
+        function copyCode(){navigator.clipboard.writeText(document.getElementById('backend-code').innerText);showToast("Copiado");}
 
         window.onload = initApp;
     </script>
