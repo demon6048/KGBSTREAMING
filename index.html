@@ -13,11 +13,59 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
     
     <style>
+        /* === NUEVO DISEÑO: FONDO Y EFECTO CRISTAL === */
         body { 
             font-family: 'Montserrat', sans-serif; 
-            background-color: #f1f5f9; 
+            
+            /* 👇 AQUÍ PUEDES CAMBIAR EL LINK POR EL DE IMGUR O CUALQUIER OTRA IMAGEN 👇 */
+            background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
-        
+
+        /* Capa oscura superpuesta al fondo para que las letras sigan siendo muy fáciles de leer */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65); /* Nivel de oscuridad del fondo (0.65) */
+            z-index: -1;
+        }
+
+        /* Quitar fondos sólidos por defecto de tailwind */
+        body.bg-slate-50, main.bg-slate-50 {
+            background-color: transparent !important;
+        }
+
+        /* Efecto Cristal (Glassmorphism) para las tarjetas principales blancas y cabecera */
+        .bg-white.rounded-2xl, header.bg-white, #confirm-box {
+            background-color: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Efecto Cristal para paneles oscuros (Sidebar, Caja Real, Totales POS) */
+        .bg-slate-900 {
+            background-color: rgba(15, 23, 42, 0.80) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Sidebar un poco más sólido para que el menú no se pierda */
+        #sidebar {
+            background-color: rgba(15, 23, 42, 0.92) !important;
+        }
+
+        /* Hacer semi-transparentes los fondos grises secundarios de las tablas */
+        thead.bg-slate-50, .bg-slate-50\/50, .bg-slate-100 {
+            background-color: rgba(255, 255, 255, 0.4) !important;
+        }
+        /* ============================================ */
+
         .nav-item.active { 
             background-color: #4338ca; 
             color: white; 
@@ -152,7 +200,7 @@
     </header>
 
     <!-- MAIN -->
-    <main class="flex-1 bg-slate-50 overflow-y-auto p-4 md:p-8 pt-20 md:ml-64 h-full">
+    <main class="flex-1 bg-slate-50 overflow-y-auto p-4 md:p-8 pt-24 md:pt-28 md:ml-64 h-full">
         <div class="max-w-6xl mx-auto pb-20">
             
             <!-- 1. POS -->
@@ -246,8 +294,12 @@
                 </div>
                 
                 <!-- Filter Bar -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6 flex flex-col gap-3">
+                    <div class="relative w-full">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+                        <input type="text" id="filter-search" oninput="UI.renderHistoryTable()" placeholder="Buscar cliente, celular, plataforma o ID de transacción..." class="w-full border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-slate-50 focus:bg-white transition">
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 items-end border-t border-slate-100 pt-3">
                         <div class="col-span-1">
                             <label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Desde</label>
                             <input type="date" id="filter-start" onchange="UI.renderHistoryTable()" class="w-full border rounded-lg p-2 text-xs outline-none focus:border-indigo-500">
@@ -651,11 +703,21 @@
                 const start = document.getElementById('filter-start').value;
                 const end = document.getElementById('filter-end').value;
                 const sel = document.getElementById('filter-seller').value;
+                const search = document.getElementById('filter-search')?.value.toLowerCase() || '';
                 
                 let d = DB.sales; 
                 if(start) d = d.filter(x => x.date.split('T')[0] >= start); 
                 if(end) d = d.filter(x => x.date.split('T')[0] <= end); 
                 if(sel) d = d.filter(x => x.seller === sel);
+                if(search) {
+                    d = d.filter(x => 
+                        String(x.client || '').toLowerCase().includes(search) || 
+                        String(x.phone || '').toLowerCase().includes(search) ||
+                        String(x.id || '').toLowerCase().includes(search) ||
+                        String(x.product || '').toLowerCase().includes(search) ||
+                        String(x.seller || '').toLowerCase().includes(search)
+                    );
+                }
                 
                 // CÁLCULO TOTALES
                 let tc=0, ts=0, rc=0; 
@@ -686,8 +748,8 @@
                     let comm = parseMoney(s.comm);
                     if(comm === 0 && profit > 0) comm = profit * (DB.config.sellerPct || 0.40);
 
-                    // --- VOUCHER ACTUALIZADO CON DATOS DEL CLIENTE ---
-                    const vText = `🔔 KGB STREAMING - REGISTRO\n---------------------------\n🆔 ID Transacción: #${s.id}\n📅 Fecha: ${new Date(s.date).toLocaleDateString()}\n👤 Vendedor: ${s.seller}\n📺 Plataforma: ${s.product}\n\n📝 DATOS DEL CLIENTE:\n👤 Nombre: ${s.client || 'No registrado'}\n📱 Celular: ${s.phone || 'No registrado'}\n\n💰 TU COMISIÓN: S/ ${comm.toFixed(2)}\n---------------------------\n✅ Su compra ha sido verificada en el sistema.`;
+                    // --- VOUCHER ACTUALIZADO CON CÓDIGOS UNICODE PARA EVITAR ERRORES EN WHATSAPP WEB ---
+                    const vText = '\uD83D\uDD14 KGB STREAMING - REGISTRO\n---------------------------\n\uD83C\uDD94 ID Transacción: #' + s.id + '\n\uD83D\uDCC5 Fecha: ' + new Date(s.date).toLocaleDateString() + '\n\uD83D\uDC64 Vendedor: ' + s.seller + '\n\uD83D\uDCFA Plataforma: ' + s.product + '\n\n\uD83D\uDCDD DATOS DEL CLIENTE:\n\uD83D\uDC64 Nombre: ' + (s.client || 'No registrado') + '\n\uD83D\uDCF1 Celular: ' + (s.phone || 'No registrado') + '\n\n\uD83D\uDCB0 TU COMISIÓN: S/ ' + comm.toFixed(2) + '\n---------------------------\n\u2705 Su compra ha sido verificada en el sistema.';
                     
                     const safeV = JSON.stringify(vText).replace(/"/g, '&quot;'); 
                     const cleanP = s.phone ? String(s.phone).replace(/\s/g,'') : '';
