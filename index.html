@@ -458,9 +458,15 @@
 
             <!-- 4. DASHBOARD -->
             <div id="view-dashboard" class="view-section hidden w-full">
-                <h2 class="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
-                    <i class="fa-solid fa-chart-line text-indigo-500"></i> REPORTES
-                </h2>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h2 class="text-xl font-black text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-indigo-500"></i> REPORTES MENSUALES
+                    </h2>
+                    <div class="bg-white/80 backdrop-blur border border-slate-200 rounded-xl p-1 shadow-sm flex items-center">
+                        <span class="px-3 text-xs font-bold text-slate-500 uppercase tracking-widest">Mes:</span>
+                        <input type="month" id="dash-month" onchange="UI.updateDashboard()" class="border-none bg-transparent text-sm font-bold text-indigo-700 outline-none cursor-pointer">
+                    </div>
+                </div>
                 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                     <div class="bg-white p-4 rounded-2xl border shadow-sm">
@@ -468,11 +474,11 @@
                         <p id="dash-total" class="text-xl font-black text-slate-800">0.00</p>
                     </div>
                     <div class="bg-white p-4 rounded-2xl border shadow-sm">
-                        <p class="text-[10px] text-indigo-500 font-bold uppercase mb-1">Utilidad Neta</p>
+                        <p class="text-[10px] text-indigo-500 font-bold uppercase mb-1">Ganancia Admin</p>
                         <p id="dash-admin" class="text-xl font-black text-indigo-600">0.00</p>
                     </div>
                     <div class="bg-white p-4 rounded-2xl border shadow-sm">
-                        <p class="text-[10px] text-emerald-500 font-bold uppercase mb-1">Comisiones</p>
+                        <p class="text-[10px] text-emerald-500 font-bold uppercase mb-1">Ganancia Vendedores</p>
                         <p id="dash-seller" class="text-xl font-black text-emerald-600">0.00</p>
                     </div>
                     <div class="bg-white p-4 rounded-2xl border shadow-sm">
@@ -482,7 +488,7 @@
                 </div>
                 
                 <div class="bg-white p-6 rounded-2xl border shadow-sm h-72 md:h-96 w-full">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-4">Rendimiento por Vendedor</h3>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-4">Rendimiento por Vendedor (Mes Actual)</h3>
                     <div class="relative h-full w-full">
                         <canvas id="chartSellers"></canvas>
                     </div>
@@ -788,17 +794,32 @@
                 }).join('');
             },
             updateDashboard: () => {
+                const monthInput = document.getElementById('dash-month');
+                if (!monthInput.value) {
+                    const now = new Date();
+                    const yyyy = now.getFullYear();
+                    const mm = String(now.getMonth() + 1).padStart(2, '0');
+                    monthInput.value = `${yyyy}-${mm}`;
+                }
+                const selectedMonth = monthInput.value;
+
                 let t=0, a=0, s=0, c=0, ss={};
                 DB.sales.forEach(x => { 
                     if(x.status !== 'REFUNDED') { 
-                        let profit = parseMoney(x.profit); if(profit===0) profit=parseMoney(x.price)-parseMoney(x.cost);
-                        let comm = parseMoney(x.comm); if(comm===0) comm=profit*(DB.config.sellerPct||0.40);
-                        let admin = parseMoney(x.admin); if(admin===0) admin=profit*(DB.config.adminPct||0.60);
+                        const saleDate = new Date(x.date);
+                        const saleMonth = `${saleDate.getFullYear()}-${String(saleDate.getMonth() + 1).padStart(2, '0')}`;
                         
-                        t+=parseMoney(x.price); a+=admin; s+=comm; c++; 
-                        if(!ss[x.seller]) ss[x.seller]=0; ss[x.seller]+=comm; 
+                        if (saleMonth === selectedMonth) {
+                            let profit = parseMoney(x.profit); if(profit===0) profit=parseMoney(x.price)-parseMoney(x.cost);
+                            let comm = parseMoney(x.comm); if(comm===0) comm=profit*(DB.config.sellerPct||0.40);
+                            let admin = parseMoney(x.admin); if(admin===0) admin=profit*(DB.config.adminPct||0.60);
+                            
+                            t+=parseMoney(x.price); a+=admin; s+=comm; c++; 
+                            if(!ss[x.seller]) ss[x.seller]=0; ss[x.seller]+=comm; 
+                        }
                     } 
                 });
+                
                 document.getElementById('dash-total').innerText=t.toFixed(2); 
                 document.getElementById('dash-admin').innerText=a.toFixed(2); 
                 document.getElementById('dash-seller').innerText=s.toFixed(2); 
